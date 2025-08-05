@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# P2P Rental Platform - Frontend
 
-## Getting Started
+A modern React/Next.js frontend for a peer-to-peer rental marketplace with responsive design and real-time features.
 
-First, run the development server:
+## 🚀 Tech Stack
 
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+- **Database**: Supabase Client
+- **Authentication**: Supabase Auth
+
+## 📦 Quick Setup
+
+### 1. Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
+Create `.env.local` file in the frontend root:
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# API
+NEXT_PUBLIC_API_URL=http://localhost:3001
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-## Learn More
+### 3. Start Development Server
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+App will be available at `http://localhost:3000`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/             # Next.js App Router pages
+├── components/      # Reusable React components
+├── hooks/           # Custom React hooks
+├── lib/             # External service configs
+├── stores/          # Zustand state management
+├── types/           # TypeScript interfaces
+└── styles/          # Global styles
+```
 
-## Deploy on Vercel
+## 🔧 Available Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint checks
+- `npm run type-check` - Run TypeScript checks
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Key Features
+
+- **Responsive Design** - Mobile-first approach with Tailwind CSS
+- **Authentication** - Secure user login/signup with Supabase Auth
+- **Real-time Updates** - Live data synchronization
+- **Item Browsing** - Search, filter, and browse rental items
+- **Booking Management** - Create and manage bookings
+- **User Profiles** - Comprehensive user profile management
+- **Dark Mode** - Theme switching capability
+
+## 🏗️ Development Guidelines
+
+### Component Structure
+```tsx
+// components/ComponentName/index.tsx
+export default function ComponentName() {
+  return <div>Component content</div>
+}
+```
+
+### State Management
+```tsx
+// stores/useAppStore.ts
+import { create } from 'zustand'
+
+interface AppState {
+  user: User | null
+  setUser: (user: User | null) => void
+}
+
+export const useAppStore = create<AppState>((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+}))
+```
+
+### API Integration
+```tsx
+// hooks/useAuth.ts
+import { supabase } from '@/lib/supabase'
+
+export function useAuth() {
+  // Authentication logic
+}
+```
+
+## 🚀 Deployment
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Deploy to Vercel
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+---
+
+For backend setup, check the `../backend/README.md`
