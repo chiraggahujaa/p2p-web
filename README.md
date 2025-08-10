@@ -26,7 +26,10 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # API
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:5000
+
+# Google OAuth (Frontend)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -99,7 +102,6 @@ export const useAppStore = create<AppState>((set) => ({
 ### API Integration
 ```tsx
 // hooks/useAuth.ts
-import { supabase } from '@/lib/supabase'
 
 export function useAuth() {
   // Authentication logic

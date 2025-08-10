@@ -1,24 +1,37 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
+
+// Define the user interface
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  emailConfirmedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Define the store state interface
 interface AppState {
-  user: {
-    id: string | null;
-    name: string | null;
-    email: string | null;
-  } | null;
+  user: User | null;
   isLoading: boolean;
   error: string | null;
+  selectedCity: string | null;
+  startDate: string | null;
+  endDate: string | null;
 }
 
 // Define the store actions interface
 interface AppActions {
-  setUser: (user: AppState['user']) => void;
+  setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
   logout: () => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  clearTokens: () => void;
+  setSelectedCity: (city: string | null) => void;
+  setDateRange: (dates: { startDate: string | null; endDate: string | null }) => void;
 }
 
 // Combine state and actions
@@ -27,21 +40,82 @@ type AppStore = AppState & AppActions;
 // Create the Zustand store
 export const useAppStore = create<AppStore>()(
   devtools(
-    (set) => ({
-      // Initial state
-      user: null,
-      isLoading: false,
-      error: null,
+    persist(
+      (set, get) => ({
+        // Initial state
+        user: null,
+        isLoading: false,
+        error: null,
+        selectedCity: null,
+        startDate: null,
+        endDate: null,
+        
 
-      // Actions
-      setUser: (user) => set({ user }, false, 'setUser'),
-      setLoading: (isLoading) => set({ isLoading }, false, 'setLoading'),
-      setError: (error) => set({ error }, false, 'setError'),
-      clearError: () => set({ error: null }, false, 'clearError'),
-      logout: () => set({ user: null, error: null }, false, 'logout'),
-    }),
+        // Actions
+        setUser: (user) => set({ user, error: null }, false, 'setUser'),
+        
+        setLoading: (isLoading) => set(
+          { isLoading }, 
+          false, 
+          'setLoading'
+        ),
+        
+        setError: (error) => set(
+          { error }, 
+          false, 
+          'setError'
+        ),
+        
+        clearError: () => set(
+          { error: null }, 
+          false, 
+          'clearError'
+        ),
+        
+        logout: () => {
+          // Clear tokens from storage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('refresh_token');
+          }
+          
+          set(
+            { user: null, error: null }, 
+            false, 
+            'logout'
+          );
+        },
+        
+        setTokens: (accessToken, refreshToken) => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('access_token', accessToken);
+            localStorage.setItem('refresh_token', refreshToken);
+          }
+        },
+        
+        clearTokens: () => {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('refresh_token');
+          }
+        },
+        
+        setSelectedCity: (city) => set({ selectedCity: city }, false, 'setSelectedCity'),
+        setDateRange: ({ startDate, endDate }) => set({ startDate, endDate }, false, 'setDateRange'),
+      }),
+      {
+        name: 'app-store',
+        partialize: (state) => ({
+          user: state.user,
+        }),
+      }
+    ),
     {
-      name: 'app-store', // Name for Redux DevTools
+      name: 'app-store',
     }
   )
 );
