@@ -18,7 +18,7 @@ function PopoverContent({ className, align = "start", sideOffset = 4, ...props }
         align={align}
         sideOffset={sideOffset}
         className={[
-          "z-50 w-auto rounded-lg border bg-background p-3 shadow-md outline-none",
+          "z-[9999] w-auto rounded-lg border bg-background p-3 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out",
           className,
         ]
           .filter(Boolean)

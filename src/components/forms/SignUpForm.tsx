@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { registerSchema } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,8 @@ type SignUpFormData = {
 export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register, isRegistering } = useAuth();
+  const router = useRouter();
+  const { register, isRegistering, user } = useAuth();
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(registerSchema),
@@ -39,6 +41,11 @@ export function SignUpForm() {
   const onSubmit = async (data: SignUpFormData) => {
     try {
       await register(data.name, data.email, data.password);
+      setTimeout(() => {
+        if (!user) {
+          router.push(`/email-confirmation?email=${encodeURIComponent(data.email)}`);
+        }
+      }, 500); // Small delay to allow toast to show
     } catch (error) {
       console.error('Registration error:', error);
     }

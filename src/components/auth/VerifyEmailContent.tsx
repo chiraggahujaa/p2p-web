@@ -1,44 +1,87 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useAppStore } from '@/stores/useAppStore';
+import { authAPI } from '@/lib/api/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
+// Helper function to parse URL fragments from Supabase
+const parseUrlFragment = () => {
+  if (typeof window === 'undefined') return null;
+  
+  const fragment = window.location.hash.substring(1);
+  if (!fragment) return null;
+  
+  const params = new URLSearchParams(fragment);
+  return {
+    access_token: params.get('access_token'),
+    refresh_token: params.get('refresh_token'),
+    type: params.get('type'),
+    expires_at: params.get('expires_at'),
+    expires_in: params.get('expires_in'),
+  };
+};
 
 export default function VerifyEmailContent() {
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const { verifyEmail } = useAuth();
-
-  const token = searchParams.get('token');
-  const type = searchParams.get('type') as 'signup' | 'email' | 'recovery' | null;
-  const email = searchParams.get('email');
+  const { setUser } = useAppStore();
+  const { setTokens } = useAppStore();
 
   useEffect(() => {
-    const verifyEmailToken = async () => {
-      if (!token || !type) {
-        setVerificationStatus('error');
-        setErrorMessage('Invalid verification link. Missing token or type.');
-        return;
-      }
-
+    const handleEmailVerification = async () => {
       try {
-        await verifyEmail(token, type, email || undefined);
-        setVerificationStatus('success');
-      } catch (err: unknown) {
-        const anyErr = err as { response?: { data?: { error?: string } } };
+        const fragmentParams = parseUrlFragment();
+        
+        if (!fragmentParams?.access_token || !fragmentParams?.type) {
+          setVerificationStatus('error');
+          setErrorMessage('Invalid verification link. Missing authentication tokens.');
+          return;
+        }
+
+        if (fragmentParams.type === 'signup' && fragmentParams.access_token && fragmentParams.refresh_token) {
+          setTokens(fragmentParams.access_token, fragmentParams.refresh_token);
+          
+          try {
+            const profile = await authAPI.getProfile();
+            if (profile?.success && profile?.data?.user) {
+              const user = profile.data.user;
+              setUser({
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                emailConfirmedAt: user.emailConfirmedAt,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+              });
+            }
+          } catch (profileError) {
+            console.warn('Could not fetch profile after verification:', profileError);
+          }
+          
+          window.history.replaceState(null, '', window.location.pathname);
+          
+          setVerificationStatus('success');
+          toast.success('Email verified successfully! You are now logged in.');
+        } else {
+          setVerificationStatus('error');
+          setErrorMessage('Invalid verification type or missing tokens.');
+        }
+      } catch (error) {
+        console.error('Email verification error:', error);
         setVerificationStatus('error');
-        setErrorMessage(anyErr?.response?.data?.error || 'Email verification failed');
+        setErrorMessage('Email verification failed. Please try again.');
       }
     };
 
-    verifyEmailToken();
-  }, [token, type, email, verifyEmail]);
+    handleEmailVerification();
+  }, [setTokens, setUser]);
 
   const handleRedirect = () => {
     if (verificationStatus === 'success') {
@@ -87,7 +130,7 @@ export default function VerifyEmailContent() {
             </div>
           )}
           <Button onClick={handleRedirect} className="w-full">
-            {verificationStatus === 'success' ? 'Go to Dashboard' : 'Back to Sign In'}
+            {verificationStatus === 'success' ? 'Go to Home' : 'Back to Sign In'}
           </Button>
           {verificationStatus === 'error' && (
             <div className="text-center">

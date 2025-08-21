@@ -56,7 +56,7 @@ export function RangeDatePicker({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="p-0 bg-transparent border-none shadow-none"
+        className="p-0 bg-transparent border-none shadow-none z-[9999]"
       >
         <CalendarComponent
           mode="range"
@@ -67,7 +67,7 @@ export function RangeDatePicker({
             onChange?.(next)
           }}
           disabled={disablePast ? { before: startOfToday } : undefined}
-          className="rounded-lg border shadow-sm"
+          className="rounded-lg border bg-white shadow-lg w-[300px]"
         />
       </PopoverContent>
     </Popover>

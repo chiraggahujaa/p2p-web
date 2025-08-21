@@ -86,10 +86,7 @@ api.interceptors.response.use(
             sessionStorage.removeItem('refresh_token');
           }
           
-          // Redirect to login page
-          if (typeof window !== 'undefined') {
-            window.location.href = '/signin';
-          }
+          console.log('Token refresh failed, letting AuthGuard handle redirect');
         }
       }
     }

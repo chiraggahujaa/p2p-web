@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from "@/stores/useAppStore";
 import { authAPI } from "@/lib/api/auth";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import {
   LoginRequest,
   RegisterRequest,
@@ -31,6 +32,7 @@ export const useAuth = () => {
   } = useAppStore();
 
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Get user profile query
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -109,6 +111,8 @@ export const useAuth = () => {
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         toast.success("Login successful!");
+        
+        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -125,27 +129,36 @@ export const useAuth = () => {
       if (response.success && response.data) {
         const { user, session } = response.data;
 
-        const s = session as { access_token?: string; refresh_token?: string } | null;
-        if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-          setTokens(s.access_token, s.refresh_token);
+        const isEmailConfirmed = user?.emailConfirmedAt !== null;
+        
+        if (isEmailConfirmed) {
+          const s = session as { access_token?: string; refresh_token?: string } | null;
+          if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
+            setTokens(s.access_token, s.refresh_token);
+          }
+
+          // Set user in store
+          if (user) {
+            setUser({
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              emailConfirmedAt: user.emailConfirmedAt,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+            });
+          }
+
+          // Invalidate and refetch profile
+          queryClient.invalidateQueries({ queryKey: ["profile"] });
+          
+          toast.success(response.message || "Registration successful!");
+          
+          router.push('/');
+        } else {
+          // Don't log user in, they need to verify email first
+          toast.success(response.message || "Registration successful! Please check your email to verify your account.");
         }
-
-        // Set user in store
-        if (user) {
-          setUser({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            emailConfirmedAt: user.emailConfirmedAt,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          });
-        }
-
-        // Invalidate and refetch profile
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-
-        toast.success(response.message || "Registration successful!");
       }
     },
     onError: (error: ApiError) => {
@@ -167,12 +180,14 @@ export const useAuth = () => {
       } else {
         toast.error(response?.message || "Logout failed");
       }
+      router.push('/');
     },
     onError: (error: ApiError) => {
       // Even if logout fails on server, clear local state
       storeLogout();
       queryClient.clear();
       console.error("Logout error:", error);
+      router.push('/');
     },
   });
 
@@ -235,6 +250,8 @@ export const useAuth = () => {
         }
 
         toast.success(response.message || "Email verified successfully!");
+        
+        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -285,6 +302,8 @@ export const useAuth = () => {
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         toast.success(response.message || "Phone verification successful!");
+        
+        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -316,6 +335,8 @@ export const useAuth = () => {
         }
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success(response.message || 'Signed in with Google');
+        
+        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -346,6 +367,8 @@ export const useAuth = () => {
         }
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success(response.message || 'Signed up with Google');
+        
+        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -365,7 +388,15 @@ export const useAuth = () => {
   // Register function
   const register = useCallback(
     async (name: string, email: string, password: string) => {
-      registerMutation.mutate({ name, email, password });
+      return new Promise((resolve, reject) => {
+        registerMutation.mutate(
+          { name, email, password },
+          {
+            onSuccess: (data) => resolve(data),
+            onError: (error) => reject(error),
+          }
+        );
+      });
     },
     [registerMutation]
   );

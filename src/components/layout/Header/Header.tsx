@@ -24,6 +24,7 @@ import {
   CreditCard,
   MapPin,
   ChevronDown,
+  LayoutDashboard,
 } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 import { useAppStore } from "@/stores/useAppStore";
@@ -226,6 +227,13 @@ export default function Header() {
 
           {/* Right: Icons + Auth */}
           <div className="flex items-center gap-1 sm:gap-2">
+            {isAuthenticated && (
+              <Link href="/dashboard">
+                <Button variant="ghost" size="icon" aria-label="Dashboard">
+                  <LayoutDashboard className="size-5" />
+                </Button>
+              </Link>
+            )}
             <Button variant="ghost" size="icon" aria-label="Card">
               <CreditCard className="size-5" />
             </Button>

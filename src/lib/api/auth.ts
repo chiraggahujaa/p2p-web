@@ -177,6 +177,17 @@ export const authAPI = {
     const session = (backend?.data?.session || null) as Record<string, unknown> | null;
     return { success: !!backend?.success, data: { user, session }, message: backend?.message || 'Google sign-up successful' };
   },
+
+  resendVerificationEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const res = await api.post('/api/auth/resend-verification', { email });
+      const backend = res.data;
+      return { success: !!backend?.success, message: backend?.message || 'Verification email sent' };
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } };
+      return { success: false, message: err?.response?.data?.error || 'Failed to resend verification email' };
+    }
+  },
 };
 
 export default authAPI;
