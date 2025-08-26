@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { getRouteType, isProtectedRoute } from '@/lib/utils/route-utils';
 
 interface RootAuthGuardProps {
   children: React.ReactNode;
@@ -20,32 +20,32 @@ export function RootAuthGuard({ children }: RootAuthGuardProps) {
   }, [pathname]);
 
   useEffect(() => {
-    if (isLoading || hasRedirected.current) return;
+    if (isLoading || hasRedirected.current) {
+      return;
+    }
 
-    const publicPages = ['/', '/signin', '/signup', '/reset-password', '/email-confirmation', '/verify-email'];
-    const isPublicPage = publicPages.includes(pathname);
-    
-    // Case 1: User not authenticated but on private page - redirect to signin
-    if (!isAuthenticated && !isPublicPage) {
+    const routeType = getRouteType(pathname);
+
+    if (!isAuthenticated && routeType === 'private') {
       hasRedirected.current = true;
       router.replace('/signin');
       return;
     }
 
-    // Case 2: User authenticated but on auth pages - redirect to home page (/)  
-    if (isAuthenticated && ['/signin', '/signup'].includes(pathname)) {
+    if (isAuthenticated && routeType === 'auth') {
       hasRedirected.current = true;
       router.replace('/');
       return;
     }
-  }, [isAuthenticated, isLoading, router, pathname]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+  }, [isAuthenticated, isLoading, pathname, router]);
+
+  if (isLoading || hasRedirected.current) {
+    return null;
+  }
+
+  if (!isAuthenticated && isProtectedRoute(pathname)) {
+    return null;
   }
 
   return <>{children}</>;

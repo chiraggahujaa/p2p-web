@@ -60,18 +60,6 @@ export function HorizontalScroller<T>({
       left: newScrollLeft,
       behavior: 'smooth'
     });
-    
-    // Button press animation
-    const button = direction === 'left' 
-      ? scrollRef.current.parentElement?.querySelector('[aria-label*="left"]') as HTMLElement
-      : scrollRef.current.parentElement?.querySelector('[aria-label*="right"]') as HTMLElement;
-    
-    if (button) {
-      button.style.transform = `translateY(-50%) scale(0.95)`;
-      setTimeout(() => {
-        button.style.transform = `translateY(-50%) scale(1)`;
-      }, 150);
-    }
   };
 
   if (items.length === 0) {
@@ -88,7 +76,7 @@ export function HorizontalScroller<T>({
           className={cn(
             "absolute -left-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full",
             "bg-white/95 backdrop-blur-sm shadow-lg border-2 border-white/20",
-            "hover:bg-white hover:shadow-xl hover:scale-110 transition-all duration-300",
+            "hover:bg-white hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300",
             "hover:border-primary/30",
             !canScrollLeft && "opacity-0 pointer-events-none scale-90",
             arrowClassName
@@ -128,7 +116,7 @@ export function HorizontalScroller<T>({
           className={cn(
             "absolute -right-2 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full",
             "bg-white/95 backdrop-blur-sm shadow-lg border-2 border-white/20",
-            "hover:bg-white hover:shadow-xl hover:scale-110 transition-all duration-300",
+            "hover:bg-white hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-300",
             "hover:border-primary/30",
             !canScrollRight && "opacity-0 pointer-events-none scale-90",
             arrowClassName

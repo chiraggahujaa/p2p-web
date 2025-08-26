@@ -28,7 +28,7 @@ export function CategoryNavigation({
         "relative group overflow-hidden rounded-2xl transition-all duration-500 ease-out",
         "border-2 shadow-sm hover:shadow-xl",
         "transform hover:-translate-y-1",
-        isScrollable ? "w-36 h-24" : "aspect-[3/2]",
+        isScrollable ? "w-36 h-24" : "w-full h-20 sm:h-24",
         selectedCategory === category.id
           ? "border-primary shadow-lg scale-105 ring-4 ring-primary/10"
           : "border-white/50 hover:border-primary/40 hover:scale-102"

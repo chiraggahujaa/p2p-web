@@ -44,7 +44,7 @@ export const useAppStore = create<AppStore>()(
       (set, get) => ({
         // Initial state
         user: null,
-        isLoading: false,
+        isLoading: true, // Start with loading true to prevent premature redirects
         error: null,
         selectedCity: null,
         startDate: null,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from "@/stores/useAppStore";
 import { authAPI } from "@/lib/api/auth";
@@ -14,10 +14,8 @@ import {
   PhoneOtpVerificationRequest,
 } from "@/types/auth";
 
-// Type for API errors
 type ApiError = Error & { response?: { data?: { error?: string } } };
 
-// Custom hook for authentication logic
 export const useAuth = () => {
   const {
     user,
@@ -34,68 +32,55 @@ export const useAuth = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Get user profile query
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: authAPI.getProfile,
-    enabled: !!user,
-    retry: false,
-  });
-
-  // Handle profile query errors
-  useEffect(() => {
-    if (profile && profile.success === false) {
-      storeLogout();
-    }
-  }, [profile, storeLogout]);
-
-  // Initial hydration from tokens -> try refresh once on mount if no user but tokens exist
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    
     const hasTokens = !!(localStorage.getItem('access_token') || sessionStorage.getItem('access_token'));
+    
     if (!user && hasTokens) {
       setLoading(true);
       authAPI
         .refreshToken()
         .then((res) => {
           if (res.success && res.data?.user && res.data?.session) {
-            const s = res.data.session as { access_token?: string; refresh_token?: string } | null;
-            if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-              setTokens(s.access_token, s.refresh_token);
+            const session = res.data.session as { access_token?: string; refresh_token?: string } | null;
+            if (session?.access_token && session?.refresh_token) {
+              setTokens(session.access_token, session.refresh_token);
             }
-            const u = res.data.user;
+            
+            const userData = res.data.user;
             setUser({
-              id: u.id,
-              email: u.email,
-              name: u.name,
-              emailConfirmedAt: u.emailConfirmedAt,
-              createdAt: u.createdAt,
-              updatedAt: u.updatedAt,
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              emailConfirmedAt: userData.emailConfirmedAt,
+              createdAt: userData.createdAt,
+              updatedAt: userData.updatedAt,
             });
-            queryClient.invalidateQueries({ queryKey: ["profile"] });
           } else {
             storeLogout();
           }
         })
+        .catch(() => {
+          storeLogout();
+        })
         .finally(() => setLoading(false));
+    } else if (!hasTokens && !user) {
+      setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, setLoading, setTokens, setUser, storeLogout]);
 
-  // Login mutation
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => authAPI.login(data),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
-        const s = session as { access_token?: string; refresh_token?: string } | null;
-        if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-          setTokens(s.access_token, s.refresh_token);
+        const sessionData = session as { access_token?: string; refresh_token?: string } | null;
+        
+        if (sessionData?.access_token && sessionData?.refresh_token) {
+          setTokens(sessionData.access_token, sessionData.refresh_token);
         }
 
-        if (!user) return;
-
-        // Set user in store
         if (user) {
           setUser({
             id: user.id,
@@ -107,7 +92,6 @@ export const useAuth = () => {
           });
         }
 
-        // Invalidate and refetch profile
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         toast.success("Login successful!");
@@ -122,22 +106,19 @@ export const useAuth = () => {
     },
   });
 
-  // Register mutation
   const registerMutation = useMutation({
     mutationFn: (data: RegisterRequest) => authAPI.register(data),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
-
         const isEmailConfirmed = user?.emailConfirmedAt !== null;
         
         if (isEmailConfirmed) {
-          const s = session as { access_token?: string; refresh_token?: string } | null;
-          if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-            setTokens(s.access_token, s.refresh_token);
+          const sessionData = session as { access_token?: string; refresh_token?: string } | null;
+          if (sessionData?.access_token && sessionData?.refresh_token) {
+            setTokens(sessionData.access_token, sessionData.refresh_token);
           }
 
-          // Set user in store
           if (user) {
             setUser({
               id: user.id,
@@ -149,27 +130,20 @@ export const useAuth = () => {
             });
           }
 
-          // Invalidate and refetch profile
           queryClient.invalidateQueries({ queryKey: ["profile"] });
-          
           toast.success(response.message || "Registration successful!");
-          
-          router.push('/');
         } else {
-          // Don't log user in, they need to verify email first
           toast.success(response.message || "Registration successful! Please check your email to verify your account.");
         }
       }
     },
     onError: (error: ApiError) => {
-      const errorMessage =
-        error?.response?.data?.error || "Registration failed";
+      const errorMessage = error?.response?.data?.error || "Registration failed";
       setError(errorMessage);
       toast.error(errorMessage);
     },
   });
 
-  // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: authAPI.logout,
     onSuccess: (response) => {
@@ -180,18 +154,14 @@ export const useAuth = () => {
       } else {
         toast.error(response?.message || "Logout failed");
       }
-      router.push('/');
     },
     onError: (error: ApiError) => {
-      // Even if logout fails on server, clear local state
       storeLogout();
       queryClient.clear();
       console.error("Logout error:", error);
-      router.push('/');
     },
   });
 
-  // Reset password mutation
   const resetPasswordMutation = useMutation({
     mutationFn: (data: ResetPasswordRequest) => authAPI.resetPassword(data),
     onSuccess: (response) => {
@@ -202,13 +172,11 @@ export const useAuth = () => {
       }
     },
     onError: (error: ApiError) => {
-      const errorMessage =
-        error?.response?.data?.error || "Failed to send reset email";
+      const errorMessage = error?.response?.data?.error || "Failed to send reset email";
       toast.error(errorMessage);
     },
   });
 
-  // Update password mutation
   const updatePasswordMutation = useMutation({
     mutationFn: (data: UpdatePasswordRequest) => authAPI.updatePassword(data),
     onSuccess: (response) => {
@@ -219,20 +187,17 @@ export const useAuth = () => {
       }
     },
     onError: (error: ApiError) => {
-      const errorMessage =
-        error?.response?.data?.error || "Failed to update password";
+      const errorMessage = error?.response?.data?.error || "Failed to update password";
       toast.error(errorMessage);
     },
   });
 
-  // Verify email mutation
   const verifyEmailMutation = useMutation({
     mutationFn: (data: VerifyEmailRequest) => authAPI.verifyEmail(data),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
 
-        // Update user in store
         if (user) {
           setUser({
             id: user.id,
@@ -244,24 +209,20 @@ export const useAuth = () => {
           });
         }
 
-        const s = session as { access_token?: string; refresh_token?: string } | null;
-        if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-          setTokens(s.access_token, s.refresh_token);
+        const sessionData = session as { access_token?: string; refresh_token?: string } | null;
+        if (sessionData?.access_token && sessionData?.refresh_token) {
+          setTokens(sessionData.access_token, sessionData.refresh_token);
         }
 
         toast.success(response.message || "Email verified successfully!");
-        
-        router.push('/');
       }
     },
     onError: (error: ApiError) => {
-      const errorMessage =
-        error?.response?.data?.error || "Email verification failed";
+      const errorMessage = error?.response?.data?.error || "Email verification failed";
       toast.error(errorMessage);
     },
   });
 
-  // Send phone OTP mutation
   const sendPhoneOtpMutation = useMutation({
     mutationFn: (data: PhoneLoginRequest) => authAPI.sendPhoneOtp(data),
     onSuccess: (response) => {
@@ -273,20 +234,17 @@ export const useAuth = () => {
     },
   });
 
-  // Verify phone OTP mutation
   const verifyPhoneOtpMutation = useMutation({
-    mutationFn: (data: PhoneOtpVerificationRequest) =>
-      authAPI.verifyPhoneOtp(data),
+    mutationFn: (data: PhoneOtpVerificationRequest) => authAPI.verifyPhoneOtp(data),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
 
-        const s = session as { access_token?: string; refresh_token?: string } | null;
-        if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-          setTokens(s.access_token, s.refresh_token);
+        const sessionData = session as { access_token?: string; refresh_token?: string } | null;
+        if (sessionData?.access_token && sessionData?.refresh_token) {
+          setTokens(sessionData.access_token, sessionData.refresh_token);
         }
 
-        // Set user in store
         if (user) {
           setUser({
             id: user.id,
@@ -298,31 +256,27 @@ export const useAuth = () => {
           });
         }
 
-        // Invalidate and refetch profile
         queryClient.invalidateQueries({ queryKey: ["profile"] });
-
         toast.success(response.message || "Phone verification successful!");
-        
-        router.push('/');
       }
     },
     onError: (error: ApiError) => {
-      const errorMessage =
-        error?.response?.data?.error || "Phone verification failed";
+      const errorMessage = error?.response?.data?.error || "Phone verification failed";
       toast.error(errorMessage);
     },
   });
 
-  // Google sign-in mutation
   const googleSignInMutation = useMutation({
     mutationFn: (tokens: { accessToken: string; idToken: string }) => authAPI.googleSignIn(tokens),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
-        const s = session as { access_token?: string; refresh_token?: string } | null;
-        if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-          setTokens(s.access_token, s.refresh_token);
+        const sessionData = session as { access_token?: string; refresh_token?: string } | null;
+        
+        if (sessionData?.access_token && sessionData?.refresh_token) {
+          setTokens(sessionData.access_token, sessionData.refresh_token);
         }
+        
         if (user) {
           setUser({
             id: user.id,
@@ -333,10 +287,9 @@ export const useAuth = () => {
             updatedAt: user.updatedAt,
           });
         }
+        
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success(response.message || 'Signed in with Google');
-        
-        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -345,16 +298,17 @@ export const useAuth = () => {
     },
   });
 
-  // Google sign-up mutation
   const googleSignUpMutation = useMutation({
     mutationFn: (tokens: { accessToken: string; idToken: string }) => authAPI.googleSignUp(tokens),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
-        const s = session as { access_token?: string; refresh_token?: string } | null;
-        if (s && typeof s.access_token === 'string' && typeof s.refresh_token === 'string') {
-          setTokens(s.access_token, s.refresh_token);
+        const sessionData = session as { access_token?: string; refresh_token?: string } | null;
+        
+        if (sessionData?.access_token && sessionData?.refresh_token) {
+          setTokens(sessionData.access_token, sessionData.refresh_token);
         }
+        
         if (user) {
           setUser({
             id: user.id,
@@ -365,10 +319,9 @@ export const useAuth = () => {
             updatedAt: user.updatedAt,
           });
         }
+        
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success(response.message || 'Signed up with Google');
-        
-        router.push('/');
       }
     },
     onError: (error: ApiError) => {
@@ -377,7 +330,6 @@ export const useAuth = () => {
     },
   });
 
-  // Login function
   const login = useCallback(
     async (email: string, password: string) => {
       loginMutation.mutate({ email, password });
@@ -385,7 +337,6 @@ export const useAuth = () => {
     [loginMutation]
   );
 
-  // Register function
   const register = useCallback(
     async (name: string, email: string, password: string) => {
       return new Promise((resolve, reject) => {
@@ -401,12 +352,10 @@ export const useAuth = () => {
     [registerMutation]
   );
 
-  // Logout function
   const logout = useCallback(async () => {
     logoutMutation.mutate();
   }, [logoutMutation]);
 
-  // Reset password function
   const resetPassword = useCallback(
     async (email: string) => {
       resetPasswordMutation.mutate({ email });
@@ -414,7 +363,6 @@ export const useAuth = () => {
     [resetPasswordMutation]
   );
 
-  // Update password function
   const updatePassword = useCallback(
     async (password: string, currentPassword?: string) => {
       updatePasswordMutation.mutate({ password, currentPassword });
@@ -422,19 +370,13 @@ export const useAuth = () => {
     [updatePasswordMutation]
   );
 
-  // Verify email function
   const verifyEmail = useCallback(
-    async (
-      token: string,
-      type: "signup" | "email" | "recovery",
-      email?: string
-    ) => {
+    async (token: string, type: "signup" | "email" | "recovery", email?: string) => {
       verifyEmailMutation.mutate({ token, type, email });
     },
     [verifyEmailMutation]
   );
 
-  // Send phone OTP function
   const sendPhoneOtp = useCallback(
     async (phone: string) => {
       sendPhoneOtpMutation.mutate({ phone });
@@ -442,7 +384,6 @@ export const useAuth = () => {
     [sendPhoneOtpMutation]
   );
 
-  // Verify phone OTP function
   const verifyPhoneOtp = useCallback(
     async (phone: string, otp: string) => {
       verifyPhoneOtpMutation.mutate({ phone, otp });
@@ -450,19 +391,14 @@ export const useAuth = () => {
     [verifyPhoneOtpMutation]
   );
 
-  const derivedIsAuthenticated = useMemo(() => !!user, [user]);
-  const derivedIsLoading =
-    isLoading ||
-    loginMutation.isPending ||
-    registerMutation.isPending ||
-    profileLoading;
+  const isAuthenticated = !!user;
+  const derivedIsLoading = isLoading || loginMutation.isPending || registerMutation.isPending;
 
   return {
     user,
-    profile: profile?.data || null,
     isLoading: derivedIsLoading,
     error,
-    isAuthenticated: derivedIsAuthenticated,
+    isAuthenticated,
     login,
     register,
     logout,
@@ -474,7 +410,6 @@ export const useAuth = () => {
     googleSignIn: (tokens: { accessToken: string; idToken: string }) => googleSignInMutation.mutate(tokens),
     googleSignUp: (tokens: { accessToken: string; idToken: string }) => googleSignUpMutation.mutate(tokens),
     clearError,
-    // Mutation states
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,

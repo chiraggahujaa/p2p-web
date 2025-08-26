@@ -21,7 +21,7 @@ import { citiesApi } from "@/lib/api/cities";
 import {
   List,
   Plus,
-  CreditCard,
+  ShoppingCart,
   MapPin,
   ChevronDown,
   LayoutDashboard,
@@ -234,16 +234,21 @@ export default function Header() {
                 </Button>
               </Link>
             )}
-            <Button variant="ghost" size="icon" aria-label="Card">
-              <CreditCard className="size-5" />
+            <Button variant="ghost" size="icon" aria-label="Cart">
+              <ShoppingCart className="size-5" />
             </Button>
-            <Button variant="ghost" size="icon" aria-label="Add">
-              <Plus className="size-5" />
-            </Button>
-            <Button variant="ghost" size="icon" aria-label="List">
-              <List className="size-5" />
-            </Button>
-
+            {isAuthenticated && (
+              <Link href="/add">
+                <Button variant="ghost" size="icon" aria-label="Add Product">
+                  <Plus className="size-5" />
+                </Button>
+              </Link>
+            )}
+            {isAuthenticated && (
+              <Button variant="ghost" size="icon" aria-label="List">
+                <List className="size-5" />
+              </Button>
+            )}
             {!isAuthenticated && (
               <div className="hidden sm:flex items-center gap-2 pl-2">
                 <Link href="/signin">
