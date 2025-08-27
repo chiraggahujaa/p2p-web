@@ -40,7 +40,7 @@ export function RootAuthGuard({ children }: RootAuthGuardProps) {
 
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  if (isLoading || hasRedirected.current) {
+  if (isLoading) {
     return null;
   }
 
