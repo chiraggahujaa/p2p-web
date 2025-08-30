@@ -25,6 +25,7 @@ import {
   MapPin,
   ChevronDown,
   LayoutDashboard,
+  BadgeCheck,
 } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 import { useAppStore } from "@/stores/useAppStore";
@@ -272,7 +273,12 @@ export default function Header() {
                       <Avatar>
                         <AvatarFallback>{initials}</AvatarFallback>
                       </Avatar>
-                      <span className="max-w-[8rem] truncate">{user?.name || "User"}</span>
+                      <div className="flex items-center gap-1 max-w-[8rem]">
+                        <span className="truncate">{user?.name || "User"}</span>
+                        {user?.isVerified && (
+                          <BadgeCheck className="size-4 text-blue-500 shrink-0" />
+                        )}
+                      </div>
                       <ChevronDown className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>

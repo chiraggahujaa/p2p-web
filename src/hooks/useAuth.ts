@@ -56,6 +56,7 @@ export const useAuth = () => {
               emailConfirmedAt: userData.emailConfirmedAt,
               createdAt: userData.createdAt,
               updatedAt: userData.updatedAt,
+              isVerified: userData.isVerified,
             });
           } else {
             storeLogout();
@@ -89,6 +90,7 @@ export const useAuth = () => {
             emailConfirmedAt: user.emailConfirmedAt,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            isVerified: user.isVerified,
           });
         }
 
@@ -206,6 +208,7 @@ export const useAuth = () => {
             emailConfirmedAt: user.emailConfirmedAt,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            isVerified: user.isVerified,
           });
         }
 
@@ -253,6 +256,7 @@ export const useAuth = () => {
             emailConfirmedAt: user.emailConfirmedAt,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            isVerified: user.isVerified,
           });
         }
 
@@ -285,6 +289,7 @@ export const useAuth = () => {
             emailConfirmedAt: user.emailConfirmedAt,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            isVerified: user.isVerified,
           });
         }
         
@@ -317,6 +322,7 @@ export const useAuth = () => {
             emailConfirmedAt: user.emailConfirmedAt,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+            isVerified: user.isVerified,
           });
         }
         
