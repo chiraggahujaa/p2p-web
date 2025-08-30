@@ -16,7 +16,9 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(npm run lint)",
       "Bash(npm run lint:*)",
-      "Read(/var/folders/1g/c0g2q44d36b66444fj2ffbzm0000gn/T/TemporaryItems/NSIRD_screencaptureui_kQOd9Y/**)"
+      "Read(/var/folders/1g/c0g2q44d36b66444fj2ffbzm0000gn/T/TemporaryItems/NSIRD_screencaptureui_kQOd9Y/**)",
+      "mcp__ide__getDiagnostics",
+      "WebFetch(domain:ui.shadcn.com)"
     ],
     "deny": [],
     "ask": []

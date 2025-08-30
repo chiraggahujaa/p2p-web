@@ -238,7 +238,7 @@ export default function Header() {
               <ShoppingCart className="size-5" />
             </Button>
             {isAuthenticated && (
-              <Link href="/add">
+              <Link href="/products/add">
                 <Button variant="ghost" size="icon" aria-label="Add Product">
                   <Plus className="size-5" />
                 </Button>

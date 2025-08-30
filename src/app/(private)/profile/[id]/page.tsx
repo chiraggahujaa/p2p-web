@@ -12,9 +12,8 @@ import ProfileCompletionDialog from '@/components/profile/ProfileCompletionDialo
 
 export default function ProfilePage() {
   const params = useParams<{ id: string }>();
-  const { user, profile: meProfile } = useAuth();
+  const { user } = useAuth();
   const userId = params?.id as string;
-  const meProfileDetails = (meProfile as { profile?: { fullName?: string | null; email?: string | null; avatarUrl?: string | null } } | null)?.profile || null;
 
   const { data: publicProfileRes } = useQuery({
     queryKey: ['public-profile', userId],
@@ -29,9 +28,9 @@ export default function ProfilePage() {
       <Sidebar
         basePath={`/profile/${userId}`}
         user={{
-          name: meProfileDetails?.fullName || publicProfile?.fullName || user?.name || null,
-          email: meProfileDetails?.email || user?.email || null,
-          avatarUrl: meProfileDetails?.avatarUrl || publicProfile?.avatarUrl || null,
+          name: publicProfile?.fullName || user?.name || null,
+          email: user?.email || null,
+          avatarUrl: publicProfile?.avatarUrl || null,
         }}
       />
 
@@ -46,7 +45,7 @@ export default function ProfilePage() {
         </div>
 
         {user?.id === userId && (
-          <ProfileCompletionDialog profile={meProfileDetails as Record<string, unknown> | null} userId={userId} />
+          <ProfileCompletionDialog profile={publicProfile as unknown as Record<string, unknown> | null} userId={userId} />
         )}
 
         <Card>

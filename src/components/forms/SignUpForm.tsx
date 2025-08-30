@@ -41,11 +41,9 @@ export function SignUpForm() {
   const onSubmit = async (data: SignUpFormData) => {
     try {
       await register(data.name, data.email, data.password);
-      setTimeout(() => {
-        if (!user) {
-          router.push(`/email-confirmation?email=${encodeURIComponent(data.email)}`);
-        }
-      }, 500); // Small delay to allow toast to show
+      if (!user) {
+        router.push(`/email-confirmation?email=${encodeURIComponent(data.email)}`);
+      }
     } catch (error) {
       console.error('Registration error:', error);
     }

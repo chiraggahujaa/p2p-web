@@ -1,6 +1,3 @@
-// No longer need ApiItem import since backend returns camelCase directly
-
-
 export interface Item {
   id: string;
   userId: string;
@@ -78,24 +75,6 @@ export interface PriceCalculation {
   finalPrice: number;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
 export interface ItemsApiResponse {
   success: boolean;
   data: Item[];
@@ -108,3 +87,4 @@ export interface ItemsApiResponse {
     hasPrev: boolean;
   };
 }
+

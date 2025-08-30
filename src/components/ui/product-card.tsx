@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/ui";
 import Image from "next/image";
 import { Item } from "@/lib/api/items";
 

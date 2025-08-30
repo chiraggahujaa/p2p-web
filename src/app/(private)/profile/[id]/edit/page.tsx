@@ -20,8 +20,17 @@ export default function EditProfilePage() {
   const { user } = useAuth();
   const userId = params?.id as string;
   const queryClient = useQueryClient();
-  const { profile: authProfile } = useAuth();
-  const meDetails = (authProfile as { profile?: { fullName?: string | null; email?: string | null; avatarUrl?: string | null; phoneNumber?: string | null; gender?: string | null; dob?: string | null; dobVisibility?: 'private' | 'friends' | 'public' | null; bio?: string | null } } | null)?.profile || null;
+  // TODO: Replace with proper profile query - using empty object for now
+  const meDetails = {
+    fullName: null,
+    email: null,
+    avatarUrl: null,
+    phoneNumber: null,
+    gender: null,
+    dob: null,
+    dobVisibility: 'private' as const,
+    bio: null,
+  };
 
   useEffect(() => {
     if (user && user.id !== userId) {

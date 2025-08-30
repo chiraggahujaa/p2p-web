@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Star, Clock, ArrowRight, TrendingUp, ChevronDown } from "lucide-react";
 import { categoriesAPI } from "@/lib/api/categories";
 import { itemsAPI, type Item } from "@/lib/api/items";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/ui";
 import Image from "next/image";
 import { CategoryNavigation } from "@/components/ui/category-navigation";
 import { Pagination } from "@/components/ui/pagination";

@@ -131,4 +131,122 @@ export const itemsAPI = {
   getByCategory: async (categoryId: string, limit: number = 20, page: number = 1): Promise<ApiResponse<PaginatedResponse<Item>>> => {
     return itemsAPI.search({ categoryId, limit, page });
   },
+
+  // Create new item
+  create: async (data: CreateItemDto): Promise<ApiResponse<Item>> => {
+    const response = await api.post('/api/items', data);
+    return response.data;
+  },
+
+  // Update existing item
+  update: async (id: string, data: UpdateItemDto): Promise<ApiResponse<Item>> => {
+    const response = await api.put(`/api/items/${id}`, data);
+    return response.data;
+  },
+
+  // Delete item
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    const response = await api.delete(`/api/items/${id}`);
+    return response.data;
+  },
+};
+
+// DTOs for creating and updating items
+export interface CreateItemDto {
+  title: string;
+  description?: string;
+  categoryId: string;
+  condition: 'new' | 'likeNew' | 'good' | 'fair' | 'poor';
+  securityAmount?: number;
+  rentPricePerDay: number;
+  addressData?: {
+    addressLine: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  deliveryMode?: 'none' | 'pickup' | 'delivery' | 'both';
+  minRentalDays?: number;
+  maxRentalDays?: number;
+  isNegotiable?: boolean;
+  tags?: string[];
+  imageUrls?: string[];
+}
+
+export interface UpdateItemDto {
+  title?: string;
+  description?: string;
+  categoryId?: string;
+  condition?: 'new' | 'likeNew' | 'good' | 'fair' | 'poor';
+  securityAmount?: number;
+  rentPricePerDay?: number;
+  addressData?: {
+    addressLine: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  deliveryMode?: 'none' | 'pickup' | 'delivery' | 'both';
+  minRentalDays?: number;
+  maxRentalDays?: number;
+  isNegotiable?: boolean;
+  tags?: string[];
+  status?: 'available' | 'booked' | 'in_transit' | 'unavailable';
+  imageUrls?: string[];
+}
+
+// File upload related interfaces
+export interface UploadedFile {
+  id: string;
+  userId: string;
+  name: string;
+  originalName: string;
+  url: string;
+  fileType: string;
+  fileSize: number;
+  mimeType: string;
+  isPublic: boolean;
+  bucket: string;
+  path: string;
+  uploadedOn: string;
+  altText?: string | null;
+}
+
+// File upload API
+export const filesAPI = {
+  // Upload product images
+  uploadProductImages: async (files: File[]): Promise<ApiResponse<UploadedFile[]>> => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+    formData.append('bucket', 'images');
+    formData.append('isPublic', 'true');
+
+    const response = await api.post('/api/files/upload/product-images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Delete file
+  deleteFile: async (fileId: string): Promise<ApiResponse<void>> => {
+    const response = await api.delete(`/api/files/${fileId}`);
+    return response.data;
+  },
+
+  // Get user files
+  getUserFiles: async (fileType?: string): Promise<ApiResponse<UploadedFile[]>> => {
+    const params = fileType ? { fileType } : {};
+    const response = await api.get('/api/files/my-files', { params });
+    return response.data;
+  },
 };

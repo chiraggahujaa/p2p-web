@@ -41,3 +41,10 @@ Keep commit messages clean and professional without AI attribution.
 - **Modals**: Use Dialog component for overlays and previews
 - **Feedback**: Toast notifications for user actions
 - **Navigation**: Clean breadcrumb and back navigation patterns
+
+#### File Organization Standards
+- **Utilities**: Avoid creating unnecessary `index.ts` files just to re-export functions from a single file
+  - ✅ Good: `import { cn } from '@/utils/ui'` 
+  - ❌ Bad: Creating `index.ts` just to re-export `ui.ts`
+- **Index Files**: Only create `index.ts` when you have multiple related modules to organize and export
+- **Direct Imports**: Prefer direct imports from specific files over index barrel exports when practical

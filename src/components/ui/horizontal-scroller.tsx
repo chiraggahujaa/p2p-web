@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/ui";
 
 interface HorizontalScrollerProps<T> {
   items: T[];
