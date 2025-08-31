@@ -9,6 +9,7 @@ interface User {
   emailConfirmedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  isVerified?: boolean;
 }
 
 // Define the store state interface

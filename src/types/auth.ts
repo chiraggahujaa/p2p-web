@@ -41,6 +41,7 @@ export interface AuthUser {
   emailConfirmedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  isVerified?: boolean;
 }
 
 export type AuthSession = Record<string, unknown>;
