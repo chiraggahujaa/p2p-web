@@ -34,7 +34,7 @@ export function LocationCard<T extends FieldValues>({
   const locationError = errors[locationFieldName as keyof FieldErrors<T>];
 
   const handleAddressSelect = (address: CreateLocationDto) => {
-    setValue(locationFieldName, address as any);
+    setValue(locationFieldName, address as T[Path<T>]);
   };
 
   const updateLocationField = (field: keyof CreateLocationDto, value: string | number) => {
@@ -51,7 +51,7 @@ export function LocationCard<T extends FieldValues>({
       [field]: value,
     };
 
-    setValue(locationFieldName, updatedLocation as any);
+    setValue(locationFieldName, updatedLocation as T[Path<T>]);
   };
 
   return (

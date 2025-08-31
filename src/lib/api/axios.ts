@@ -77,7 +77,7 @@ api.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return api(originalRequest);
           }
-        } catch (refreshError) {
+        } catch {
           // Refresh failed, clear tokens and redirect to login
           if (typeof window !== 'undefined') {
             localStorage.removeItem('access_token');

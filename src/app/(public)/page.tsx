@@ -2,10 +2,9 @@
 
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Clock, ArrowRight, TrendingUp, ChevronDown } from "lucide-react";
+import { ArrowRight, TrendingUp, ChevronDown } from "lucide-react";
 import { categoriesAPI } from "@/lib/api/categories";
 import { itemsAPI, type Item } from "@/lib/api/items";
 import { cn } from "@/utils/ui";
@@ -14,7 +13,7 @@ import { CategoryNavigation } from "@/components/ui/category-navigation";
 import { Pagination } from "@/components/ui/pagination";
 import { ProductCard } from "@/components/ui/product-card";
 import { useAppStore } from "@/stores/useAppStore";
-import { format, addDays } from "date-fns";
+import { addDays } from "date-fns";
 
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");

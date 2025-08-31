@@ -83,7 +83,7 @@ export const authAPI = {
       const user = mapToAuthUser(backend?.data?.user);
       const profile = backend?.data?.profile ?? null;
       return { success: true, data: { user, profile } };
-    } catch (_) {
+    } catch {
       return { success: false, data: { user: null, profile: null } };
     }
   },

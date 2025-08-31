@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 export default function EditProfilePage() {
   const params = useParams<{ id: string }>();
@@ -21,7 +21,7 @@ export default function EditProfilePage() {
   const userId = params?.id as string;
   const queryClient = useQueryClient();
   // TODO: Replace with proper profile query - using empty object for now
-  const meDetails = {
+  const meDetails = useMemo(() => ({
     fullName: null,
     email: null,
     avatarUrl: null,
@@ -30,7 +30,7 @@ export default function EditProfilePage() {
     dob: null,
     dobVisibility: 'private' as const,
     bio: null,
-  };
+  }), []);
 
   useEffect(() => {
     if (user && user.id !== userId) {

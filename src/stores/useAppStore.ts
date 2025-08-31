@@ -41,7 +41,7 @@ type AppStore = AppState & AppActions;
 export const useAppStore = create<AppStore>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         // Initial state
         user: null,
         isLoading: true, // Start with loading true to prevent premature redirects

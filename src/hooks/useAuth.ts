@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from "@/stores/useAppStore";
 import { authAPI } from "@/lib/api/auth";
 import { toast } from "sonner";

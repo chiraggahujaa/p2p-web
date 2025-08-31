@@ -1,7 +1,7 @@
 import { ApiResponse, PaginatedResponse } from './@types';
 import { Item, SearchFilters, AvailabilityCheck, PriceCalculation } from './@types';
 import { PublicUserProfile, MeProfile, UpdateMeProfilePayload } from './@types';
-import { LoginRequest, RegisterRequest, ResetPasswordRequest, UpdatePasswordRequest, VerifyEmailRequest, PhoneLoginRequest, PhoneOtpVerificationRequest } from './@types';
+import { LoginRequest, RegisterRequest, ResetPasswordRequest, UpdatePasswordRequest, VerifyEmailRequest, PhoneLoginRequest, PhoneOtpVerificationRequest, AuthUser, AuthSession } from './auth';
 
 // Items API Functions
 export const itemsApi = {
@@ -159,7 +159,7 @@ export const usersApi = {
 // Auth API Functions
 export const authApi = {
   // Login
-  async login(credentials: LoginRequest): Promise<ApiResponse<{ user: any; session: any }>> {
+  async login(credentials: LoginRequest): Promise<ApiResponse<{ user: AuthUser; session: AuthSession }>> {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
@@ -174,7 +174,7 @@ export const authApi = {
   },
 
   // Register
-  async register(userData: RegisterRequest): Promise<ApiResponse<{ user: any; session: any }>> {
+  async register(userData: RegisterRequest): Promise<ApiResponse<{ user: AuthUser; session: AuthSession }>> {
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
@@ -249,7 +249,7 @@ export const authApi = {
   },
 
   // Phone OTP verification
-  async phoneOtpVerification(data: PhoneOtpVerificationRequest): Promise<ApiResponse<{ user: any; session: any }>> {
+  async phoneOtpVerification(data: PhoneOtpVerificationRequest): Promise<ApiResponse<{ user: AuthUser; session: AuthSession }>> {
     const response = await fetch('/api/auth/phone-otp', {
       method: 'POST',
       headers: {

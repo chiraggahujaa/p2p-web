@@ -137,7 +137,7 @@ export function AddressAutocomplete({
         console.error("Address search error:", error);
         setSuggestions([]);
         
-        const errorResponse = error as any;
+        const errorResponse = error as { response?: { status?: number } };
         if (errorResponse.response?.status === 429) {
           toast.error("Rate limit exceeded. Please wait before searching again.");
         } else if (errorResponse.response?.status && errorResponse.response.status >= 500) {
