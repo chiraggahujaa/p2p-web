@@ -1,1 +1,238 @@
+name: CI/CD Pipeline
 
+on:
+  push:
+    branches: [ '**' ]  # Run on every branch
+  pull_request:
+    branches: [ main, staging, production ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '9'
+
+jobs:
+  # Security and Quality Checks
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+  # Code Quality and Testing
+  test-and-lint:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript check
+        run: pnpm tsc --noEmit
+
+      - name: Lint code
+        run: pnpm lint
+
+      - name: Check for tests
+        run: |
+          if [ -d "tests" ] || [ -f "jest.config.js" ]; then
+            pnpm test --passWithNoTests
+          else
+            echo "No tests found, skipping test step"
+          fi
+        env:
+          CI: true
+
+  # Build and Performance Tests
+  build-and-performance:
+    name: Build & Performance
+    runs-on: ubuntu-latest
+    needs: [security-scan, test-and-lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: |
+            .next/
+            out/
+          retention-days: 1
+
+  # E2E Testing (Optional - only if Playwright is configured)
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [build-and-performance]
+    if: github.event_name == 'pull_request' || contains(fromJSON('["staging", "production"]'), github.ref_name)
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for E2E tests
+        run: |
+          if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
+            pnpm playwright install --with-deps
+            pnpm playwright test
+          else
+            echo "No E2E tests configured, skipping"
+          fi
+        env:
+          NODE_ENV: test
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: github.ref == 'refs/heads/staging'
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+
+      - name: Deploy to Vercel (Staging)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: '--env=staging'
+          scope: ${{ secrets.TEAM_ID }}
+
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: github.ref == 'refs/heads/production'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+
+      - name: Deploy to Vercel (Production)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: '--prod'
+          scope: ${{ secrets.TEAM_ID }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          generate_release_notes: true
+          files: |
+            .next/trace
+            .next/build-manifest.json
+
+
+  # Post-deployment monitoring
+  post-deployment:
+    name: Post-deployment Checks
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/production'
+    steps:
+      - name: Health Check
+        run: |
+          sleep 30
+          curl -f ${{ needs.deploy-production.outputs.url }}/api/health || exit 1
+
+      - name: Performance Check
+        run: |
+          echo "Running post-deployment performance checks..."
+          # Add your performance monitoring checks here
