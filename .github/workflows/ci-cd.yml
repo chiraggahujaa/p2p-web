@@ -9,7 +9,6 @@ on:
 
 env:
   NODE_VERSION: '20'
-  PNPM_VERSION: '9'
 
 jobs:
   # Security and Quality Checks
@@ -51,30 +50,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: TypeScript check
-        run: pnpm tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: Lint code
-        run: pnpm lint
+        run: npm run lint
 
       - name: Check for tests
         run: |
           if [ -d "tests" ] || [ -f "jest.config.js" ]; then
-            pnpm test --passWithNoTests
+            npm test --passWithNoTests
           else
             echo "No tests found, skipping test step"
           fi
@@ -90,22 +84,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build application
-        run: pnpm build
+        run: npm run build
         env:
           NODE_ENV: production
 
@@ -128,25 +117,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Check for E2E tests
         run: |
           if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
-            pnpm playwright install --with-deps
-            pnpm playwright test
+            npx playwright install --with-deps
+            npm run e2e
           else
             echo "No E2E tests configured, skipping"
           fi
