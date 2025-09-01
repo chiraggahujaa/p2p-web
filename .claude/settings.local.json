@@ -16,10 +16,12 @@
       "Bash(npm run lint)",
       "Bash(npm run lint:*)",
       "Read(/var/folders/1g/c0g2q44d36b66444fj2ffbzm0000gn/T/TemporaryItems/NSIRD_screencaptureui_kQOd9Y/**)",
-      "mcp__ide__getDiagnostics",
-      "WebFetch(domain:ui.shadcn.com)",
-      "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(nvm use:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(nvm install:*)",
+      "Bash(npx npm-check-updates:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []

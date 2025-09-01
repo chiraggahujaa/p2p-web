@@ -9,7 +9,7 @@ A modern React/Next.js frontend for a peer-to-peer rental marketplace with respo
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
 - **Database**: Supabase Client
-- **Authentication**: Supabase Auth
+- **Authentication**: Supabase Auth & Google OAuth
 
 ## 📦 Quick Setup
 
@@ -21,18 +21,11 @@ npm install
 ### 2. Environment Setup
 Create `.env.local` file in the frontend root:
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
 # API
 NEXT_PUBLIC_API_URL=http://localhost:5000
 
-# Google OAuth (Frontend)
+# Google OAuth
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ### 3. Start Development Server
@@ -66,7 +59,7 @@ src/
 ## 🎨 Key Features
 
 - **Responsive Design** - Mobile-first approach with Tailwind CSS
-- **Authentication** - Secure user login/signup with Supabase Auth
+- **Authentication** - Secure user login/signup with Supabase Auth & Google OAuth
 - **Real-time Updates** - Live data synchronization
 - **Item Browsing** - Search, filter, and browse rental items
 - **Booking Management** - Create and manage bookings

@@ -20,17 +20,6 @@ export default function EditProfilePage() {
   const { user } = useAuth();
   const userId = params?.id as string;
   const queryClient = useQueryClient();
-  // TODO: Replace with proper profile query - using empty object for now
-  const meDetails = useMemo(() => ({
-    fullName: null,
-    email: null,
-    avatarUrl: null,
-    phoneNumber: null,
-    gender: null,
-    dob: null,
-    dobVisibility: 'private' as const,
-    bio: null,
-  }), []);
 
   useEffect(() => {
     if (user && user.id !== userId) {
@@ -49,18 +38,9 @@ export default function EditProfilePage() {
   });
 
   useEffect(() => {
-    if (meDetails) {
-      setForm({
-        fullName: meDetails.fullName || '',
-        phoneNumber: meDetails.phoneNumber || '',
-        gender: meDetails.gender || '',
-        dob: meDetails.dob || '',
-        dobVisibility: (meDetails.dobVisibility || 'private') as 'private' | 'friends' | 'public',
-        bio: meDetails.bio || '',
-        avatarUrl: meDetails.avatarUrl || '',
-      });
-    }
-  }, [meDetails]);
+    // TODO: Implement profile data fetching
+    // For now, keep default empty form values
+  }, []);
 
   const mutation = useMutation({
     mutationFn: (payload: UpdateMeProfilePayload) => usersAPI.updateMeProfile(payload),
@@ -86,7 +66,7 @@ export default function EditProfilePage() {
 
   return (
     <div className="flex gap-6">
-      <Sidebar basePath={`/profile/${userId}`} user={{ name: meDetails?.fullName, email: meDetails?.email, avatarUrl: meDetails?.avatarUrl }} />
+      <Sidebar basePath={`/profile/${userId}`} user={{ name: user?.name, email: user?.email, avatarUrl: null }} />
       <div className="flex-1 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Edit Profile</h1>

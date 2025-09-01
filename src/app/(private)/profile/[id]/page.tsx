@@ -45,7 +45,7 @@ export default function ProfilePage() {
         </div>
 
         {user?.id === userId && (
-          <ProfileCompletionDialog profile={publicProfile as unknown as Record<string, unknown> | null} userId={userId} />
+          <ProfileCompletionDialog profile={null} userId={userId} />
         )}
 
         <Card>
