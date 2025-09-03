@@ -11,19 +11,19 @@ export interface PublicUserProfile {
 
 export interface MeProfile {
   id: string;
-  full_name?: string | null;
+  fullName?: string | null;
   email?: string | null;
-  phone_number?: string | null;
+  phoneNumber?: string | null;
   gender?: string | null;
   dob?: string | null;
-  dob_visibility?: 'private' | 'friends' | 'public' | null;
-  trust_score?: number | null;
-  is_verified?: boolean | null;
-  avatar_url?: string | null;
+  dobVisibility?: 'private' | 'friends' | 'public' | null;
+  trustScore?: number | null;
+  isVerified?: boolean | null;
+  avatarUrl?: string | null;
   bio?: string | null;
-  is_active?: boolean | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  isActive?: boolean | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   location?: { city?: string | null; state?: string | null } | null;
 }
 

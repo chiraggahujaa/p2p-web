@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Calendar } from "@/components/ui/calendar";
 import RangeDatePicker from "@/components/ui/range-date-picker";
+import ProximitySelector from "@/components/ui/proximity-selector";
 import { format } from "date-fns";
 import { citiesApi } from "@/lib/api/cities";
 import {
@@ -178,8 +179,12 @@ export default function Header() {
   const city = useAppStore((s) => s.selectedCity);
   const startDate = useAppStore((s) => s.startDate);
   const endDate = useAppStore((s) => s.endDate);
+  const proximityEnabled = useAppStore((s) => s.proximityEnabled);
+  const proximityRadius = useAppStore((s) => s.proximityRadius);
   const setSelectedCity = useAppStore((s) => s.setSelectedCity);
   const setDateRange = useAppStore((s) => s.setDateRange);
+  const setProximityEnabled = useAppStore((s) => s.setProximityEnabled);
+  const setProximityRadius = useAppStore((s) => s.setProximityRadius);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -223,6 +228,17 @@ export default function Header() {
                 onChange={setDateRange}
               />
             </div>
+            {isAuthenticated && (
+              <div className="hidden lg:flex items-center gap-2">
+                <ProximitySelector
+                  enabled={proximityEnabled}
+                  radius={proximityRadius}
+                  onEnabledChange={setProximityEnabled}
+                  onRadiusChange={setProximityRadius}
+                  compact
+                />
+              </div>
+            )}
           </div>
 
           {/* Right: Icons + Auth */}

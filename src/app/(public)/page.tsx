@@ -6,13 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, ChevronDown } from "lucide-react";
 import { categoriesAPI } from "@/lib/api/categories";
-import { itemsAPI, type Item } from "@/lib/api/items";
+import { itemsAPI } from "@/lib/api/items";
+import { type Item } from "../../types/items";
 import { cn } from "@/utils/ui";
 import Image from "next/image";
 import { CategoryNavigation } from "@/components/ui/category-navigation";
 import { Pagination } from "@/components/ui/pagination";
 import { ProductCard } from "@/components/ui/product-card";
 import { useAppStore } from "@/stores/useAppStore";
+import { useItemsSearch } from "@/hooks/useItems";
 import { addDays } from "date-fns";
 
 export default function HomePage() {
@@ -45,18 +47,11 @@ export default function HomePage() {
     queryFn: categoriesAPI.getAll,
   });
 
-  // Fetch items with pagination
-  const { data: itemsResponse, isLoading: itemsLoading } = useQuery({
-    queryKey: ["items", selectedCategory, currentPage, itemsPerPage],
-    queryFn: () => {
-      const filters = {
-        limit: itemsPerPage,
-        page: currentPage,
-        ...(selectedCategory && selectedCategory !== "other" ? { categoryId: selectedCategory } : {}),
-      };
-      return itemsAPI.search(filters);
-    },
-    enabled: true,
+  // Fetch items with pagination and proximity filtering
+  const { data: itemsResponse, isLoading: itemsLoading } = useItemsSearch({
+    limit: itemsPerPage,
+    page: currentPage,
+    ...(selectedCategory && selectedCategory !== "other" ? { categoryId: selectedCategory } : {}),
   });
 
   const calculateItemPrice = (item: Item) => {
@@ -64,8 +59,8 @@ export default function HomePage() {
   };
 
   const featuredCategories = popularCategories?.data?.slice(0, 4) || [];
-  const items = itemsResponse?.data?.items || [];
-  const totalItems = itemsResponse?.data?.pagination?.total || 0;
+  const items = itemsResponse?.data || [];
+  const totalItems = itemsResponse?.pagination?.total || 0;
 
   // Handle category click from featured section
   const handleFeaturedCategoryClick = (categoryId: string) => {
@@ -250,7 +245,7 @@ export default function HomePage() {
             
             {totalItems > 0 && (
               <Badge variant="outline" className="w-fit">
-                Page {currentPage} of {Math.ceil(totalItems / itemsPerPage)}
+                Page {itemsResponse?.pagination?.page || currentPage} of {itemsResponse?.pagination?.totalPages || Math.ceil(totalItems / itemsPerPage)}
               </Badge>
             )}
           </div>
@@ -278,7 +273,7 @@ export default function HomePage() {
 
               {/* Pagination */}
               <Pagination
-                currentPage={currentPage}
+                currentPage={itemsResponse?.pagination?.page || currentPage}
                 totalItems={totalItems}
                 itemsPerPageOptions={[15, 30, 50]}
                 defaultItemsPerPage={itemsPerPage}

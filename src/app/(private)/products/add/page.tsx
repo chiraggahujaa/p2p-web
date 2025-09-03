@@ -17,10 +17,10 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { categoriesAPI } from "@/lib/api/categories";
 import { itemsAPI, type CreateItemDto, type UploadedFile } from "@/lib/api/items";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { LocationCard } from "@/components/forms/LocationCard";
+import { LocationSelector } from "@/components/forms/LocationSelector";
 import { ArrowLeft, X } from "lucide-react";
 import Link from "next/link";
-import { CreateLocationDto } from "@/types";
+import { CreateLocationDto } from "@/types/location";
 
 interface ProductFormData {
   title: string;
@@ -366,7 +366,7 @@ export default function AddProductPage() {
         </Card>
 
         {/* Location */}
-        <LocationCard
+        <LocationSelector
           title="Location"
           description="This helps potential renters find and reach you"
           setValue={setValue}
@@ -374,6 +374,7 @@ export default function AddProductPage() {
           errors={errors}
           locationFieldName="location"
           required={true}
+          enableAddressBook={true}
         />
 
         {/* Product Images */}

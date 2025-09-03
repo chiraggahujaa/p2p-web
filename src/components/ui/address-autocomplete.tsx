@@ -9,7 +9,7 @@ import { MapPin, Loader2, ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/utils/ui";
 import { toast } from "sonner";
 import api from "@/lib/api/axios";
-import { CreateLocationDto } from "@/types";
+import { CreateLocationDto } from "@/types/location";
 
 interface AddressSuggestion {
   display_name: string;

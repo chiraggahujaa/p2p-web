@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
-import { CreateLocationDto } from "@/types";
+import { CreateLocationDto } from "@/types/location";
 import { MapPin } from "lucide-react";
 import { cn } from "@/utils/ui";
 
@@ -75,9 +75,6 @@ export function LocationCard<T extends FieldValues>({
           {required && !location && (
             <p className="text-sm text-destructive">Location is required</p>
           )}
-          <p className="text-xs text-muted-foreground">
-            Search for your complete address for better visibility, or fill in the details manually below.
-          </p>
         </div>
 
         {/* Show selected address details */}
@@ -167,6 +164,49 @@ export function LocationCard<T extends FieldValues>({
                   value={location?.country || "India"}
                   onChange={(e) => updateLocationField("country", e.target.value)}
                 />
+              </div>
+            </div>
+
+            {/* Latitude and Longitude Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  placeholder="e.g., 28.7041"
+                  value={location?.latitude || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value) {
+                      updateLocationField("latitude", parseFloat(value));
+                    }
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Auto-filled when using address search. Can be manually adjusted.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  placeholder="e.g., 77.1025"
+                  value={location?.longitude || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value) {
+                      updateLocationField("latitude", parseFloat(value));
+                    }                  
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Auto-filled when using address search. Can be manually adjusted.
+                </p>
               </div>
             </div>
           </div>
