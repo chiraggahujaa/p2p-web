@@ -48,16 +48,30 @@ export interface Item {
 
 export interface SearchFilters {
   q?: string;
+  searchTerm?: string;
   categoryId?: string;
   locationId?: string;
   minPrice?: number;
   maxPrice?: number;
+  priceRange?: {
+    min?: number;
+    max?: number;
+  };
   condition?: string[];
-  deliveryMode?: string;
+  deliveryMode?: string | string[];
   startDate?: string;
   endDate?: string;
+  availability?: {
+    startDate?: string;
+    endDate?: string;
+  };
   radius?: number;
-  sortBy?: 'price_asc' | 'price_desc' | 'rating' | 'distance' | 'newest' | 'popular';
+  location?: {
+    latitude: number;
+    longitude: number;
+    radius?: number;
+  };
+  sortBy?: 'price_asc' | 'price_desc' | 'priceAsc' | 'priceDesc' | 'rating' | 'distance' | 'newest' | 'popular';
   page?: number;
   limit?: number;
 }
@@ -76,24 +90,6 @@ export interface PriceCalculation {
   discountPercentage: number;
   discountAmount: number;
   finalPrice: number;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
 }
 
 export interface ItemsApiResponse {

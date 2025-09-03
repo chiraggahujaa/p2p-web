@@ -4,25 +4,50 @@ import {
   type SearchFilters,
   type AvailabilityCheck,
   type PriceCalculation,
-  type ApiResponse,
-  type PaginatedResponse,
   type ItemsApiResponse
 } from '../../types/items';
 
-export type { Item, SearchFilters, AvailabilityCheck, PriceCalculation, ApiResponse, PaginatedResponse };
-
-
+import { ApiResponse, PaginatedResponse } from '@/types/api';
 
 export const itemsAPI = {
   // Search items with filters
   search: async (filters: SearchFilters = {}): Promise<ApiResponse<PaginatedResponse<Item>>> => {
     const queryParams = new URLSearchParams();
     
+    console.log('Filters', filters); // TODO : Needs to be tested
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
+        if (key === 'location' && typeof value === 'object' && !Array.isArray(value)) {
+          // Handle location object with nested properties
+          const location = value as { latitude: number; longitude: number; radius?: number };
+          queryParams.append('location[latitude]', location.latitude.toString());
+          queryParams.append('location[longitude]', location.longitude.toString());
+          if (location.radius) {
+            queryParams.append('location[radius]', location.radius.toString());
+          }
+        } else if (key === 'priceRange' && typeof value === 'object' && !Array.isArray(value)) {
+          // Handle priceRange object
+          const priceRange = value as { min?: number; max?: number };
+          if (priceRange.min !== undefined) {
+            queryParams.append('priceRange[min]', priceRange.min.toString());
+          }
+          if (priceRange.max !== undefined) {
+            queryParams.append('priceRange[max]', priceRange.max.toString());
+          }
+        } else if (key === 'availability' && typeof value === 'object' && !Array.isArray(value)) {
+          // Handle availability object
+          const availability = value as { startDate?: string; endDate?: string };
+          if (availability.startDate) {
+            queryParams.append('availability[startDate]', availability.startDate);
+          }
+          if (availability.endDate) {
+            queryParams.append('availability[endDate]', availability.endDate);
+          }
+        } else if (Array.isArray(value)) {
+          // Handle arrays by appending each value
           value.forEach(v => queryParams.append(key, v.toString()));
         } else {
+          // Handle primitive values
           queryParams.append(key, value.toString());
         }
       }
@@ -31,16 +56,16 @@ export const itemsAPI = {
     const response = await api.get(`/api/items/search?${queryParams.toString()}`);
     const apiResponse: ItemsApiResponse = response.data;
     
-    // API response now comes in camelCase from backend
     return {
       success: apiResponse.success,
       message: 'Items retrieved successfully',
       data: {
-        items: apiResponse.data,
+        data: apiResponse.data,
         pagination: apiResponse.pagination
       }
     };
   },
+
 
   // Get popular items
   getPopular: async (limit: number = 10): Promise<ApiResponse<Item[]>> => {

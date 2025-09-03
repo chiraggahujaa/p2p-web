@@ -20,6 +20,7 @@ interface SidebarProps {
 const menu = [
   { key: 'orders', label: 'Orders', href: 'orders' },
   { key: 'products', label: 'Product Listing', href: 'products' },
+  { key: 'address-book', label: 'Address Book', href: 'address-book' },
   { key: 'details', label: 'User Details', href: 'details' },
 ];
 

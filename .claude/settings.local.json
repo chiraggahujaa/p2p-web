@@ -21,7 +21,9 @@
       "Bash(npm --version)",
       "Bash(nvm install:*)",
       "Bash(npx npm-check-updates:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

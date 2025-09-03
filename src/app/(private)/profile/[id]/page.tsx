@@ -1,80 +1,171 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { usersAPI } from '@/lib/api/users';
 import { useAuth } from '@/hooks/useAuth';
-import Sidebar from '@/components/layout/Sidebar/Sidebar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ProfileCompletionDialog from '@/components/profile/ProfileCompletionDialog';
+import { useMyProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { cn } from '@/utils/ui';
+import { User, MapPin, Package, ShoppingBag, BadgeCheck, Lock } from 'lucide-react';
+import { ProfileTab } from '@/components/profile/tabs/ProfileTab';
+import { OrdersTab } from '@/components/profile/tabs/OrdersTab';
+import { ProductsTab } from '@/components/profile/tabs/ProductsTab';
+import { AddressBookTab } from '@/components/profile/tabs/AddressBookTab';
+import { DetailsTab } from '@/components/profile/tabs/DetailsTab';
+
+type TabKey = 'profile' | 'orders' | 'products' | 'address-book' | 'details';
+
+const privateTabs = [
+  { key: 'profile' as TabKey, label: 'Profile', icon: User },
+  { key: 'orders' as TabKey, label: 'Orders', icon: ShoppingBag },
+  { key: 'products' as TabKey, label: 'Product Listing', icon: Package },
+  { key: 'address-book' as TabKey, label: 'Address Book', icon: MapPin },
+  { key: 'details' as TabKey, label: 'User Details', icon: User },
+];
+
+const publicTabs = [
+  { key: 'profile' as TabKey, label: 'Profile', icon: User },
+  { key: 'products' as TabKey, label: 'Product List', icon: Package },
+];
 
 export default function ProfilePage() {
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   const userId = params?.id as string;
+  const [activeTab, setActiveTab] = useState<TabKey>('profile');
 
   const { data: publicProfileRes } = useQuery({
     queryKey: ['public-profile', userId],
     queryFn: () => usersAPI.getPublicProfile(userId),
-    enabled: !!userId,
+    enabled: !!userId && user?.id !== userId, // Only fetch if viewing someone else's profile
   });
 
+  const { data: myProfileRes } = useMyProfile();
+  const updateProfileMutation = useUpdateProfile();
+
   const publicProfile = publicProfileRes?.data;
+  const myProfile = myProfileRes?.data;
+  const isOwnProfile = user?.id === userId;
+
+  // Use myProfile for own profile, publicProfile for others
+  const profileData = isOwnProfile ? myProfile : publicProfile;
+  
+  // Get appropriate tabs based on profile type
+  const availableTabs = isOwnProfile ? privateTabs : publicTabs;
+
+  // Reset active tab if viewing public profile and current tab is not allowed
+  useEffect(() => {
+    if (!isOwnProfile && !publicTabs.some(tab => tab.key === activeTab)) {
+      setActiveTab('profile');
+    }
+  }, [isOwnProfile, activeTab]);
+
+  // Loading state for public profiles
+  if (!isOwnProfile && (!publicProfileRes || !publicProfile)) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <LoadingSpinner className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  const renderTabContent = () => {
+    // Prevent access to restricted tabs for public profiles
+    if (!isOwnProfile && !publicTabs.some(tab => tab.key === activeTab)) {
+      return (
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+              <Lock className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Access Restricted</h3>
+              <p className="text-muted-foreground">
+                This section is only available to the profile owner.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    switch (activeTab) {
+      case 'profile':
+        return (
+          <ProfileTab
+            profileData={profileData}
+            isOwnProfile={isOwnProfile}
+            userId={userId}
+            updateProfileMutation={updateProfileMutation}
+          />
+        );
+      case 'orders':
+        return (
+          <OrdersTab
+            profileData={profileData}
+            isOwnProfile={isOwnProfile}
+          />
+        );
+      case 'products':
+        return <ProductsTab />;
+      case 'address-book':
+        return <AddressBookTab isOwnProfile={isOwnProfile} />;
+      case 'details':
+        return <DetailsTab />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="flex gap-6">
-      <Sidebar
-        basePath={`/profile/${userId}`}
-        user={{
-          name: publicProfile?.fullName || user?.name || null,
-          email: user?.email || null,
-          avatarUrl: publicProfile?.avatarUrl || null,
-        }}
-      />
-
-      <div className="flex-1 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Profile</h1>
-          {user?.id === userId && (
-            <Button asChild>
-              <Link href={`/profile/${userId}/edit`}>Edit</Link>
-            </Button>
-          )}
+      {/* Left Sidebar with User Info and Navigation */}
+      <aside className="w-full md:w-64 shrink-0 border-r bg-white">
+        <div className="p-4 flex items-center gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={profileData?.avatarUrl || undefined} alt={profileData?.fullName || 'User'} />
+            <AvatarFallback>{profileData?.fullName?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-medium leading-tight flex items-center gap-1">
+              {profileData?.fullName || user?.name || 'User'}
+              {profileData?.isVerified && (
+                <BadgeCheck className="h-4 w-4 text-blue-500" />
+              )}
+            </div>
+            {isOwnProfile && user?.email && <div className="text-xs text-muted-foreground">{user.email}</div>}
+          </div>
         </div>
+        <Separator />
+        <nav className="p-2 space-y-1">
+          {availableTabs.map((tab) => {
+            const IconComponent = tab.icon;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={cn(
+                  'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                  isActive 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                )}
+              >
+                <IconComponent className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
 
-        {user?.id === userId && (
-          <ProfileCompletionDialog profile={null} userId={userId} />
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Public Info</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground">Full Name</div>
-              <div className="font-medium">{publicProfile?.fullName || '—'}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Trust Score</div>
-              <div className="font-medium">{publicProfile?.trustScore ?? 0}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Verified</div>
-              <div className="font-medium">{publicProfile?.isVerified ? 'Yes' : 'No'}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Location</div>
-              <div className="font-medium">{publicProfile?.location ? `${publicProfile.location.city || ''}${publicProfile.location.city && publicProfile.location.state ? ', ' : ''}${publicProfile.location.state || ''}` : '—'}</div>
-            </div>
-            <div className="md:col-span-2">
-              <div className="text-sm text-muted-foreground">Bio</div>
-              <div className="font-medium">{publicProfile?.bio || '—'}</div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content Area */}
+      <div className="flex-1">
+        {renderTabContent()}
       </div>
     </div>
   );

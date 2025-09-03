@@ -25,7 +25,6 @@ export default function HomePage() {
     from: startDate ? new Date(startDate) : new Date(),
     to: endDate ? new Date(endDate) : addDays(new Date(), 1),
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <HeroSection />
