@@ -7,6 +7,8 @@ import {
   type ItemsApiResponse
 } from '../../types/items';
 
+export type { Item };
+
 import { ApiResponse, PaginatedResponse } from '@/types/api';
 
 export const itemsAPI = {

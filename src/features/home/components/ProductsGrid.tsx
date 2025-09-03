@@ -30,7 +30,7 @@ export const ProductsGrid = ({
     itemsPerPage
   );
 
-  const items = itemsResponse?.data?.items || [];
+  const items = itemsResponse?.data?.data || [];
   const totalItems = itemsResponse?.data?.pagination?.total || 0;
 
   const calculateItemPrice = (item: Item) => {
@@ -86,7 +86,7 @@ export const ProductsGrid = ({
         ) : items.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-12">
-              {items.map((item) => {
+              {items.map((item: Item) => {
                 const pricing = calculateItemPrice(item);
                 return <ProductCard key={item.id} item={item} pricing={pricing} />;
               })}
