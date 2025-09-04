@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -16,12 +16,33 @@ import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { categoriesAPI } from "@/lib/api/categories";
 import { itemsAPI } from "@/lib/api/items";
-import { type CreateItemDto, type UploadedFile } from "@/types/items";
+import { type UpdateItemDto, type UploadedFile } from "@/types/items";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { LocationSelector } from "@/components/forms/LocationSelector";
-import { ArrowLeft, X } from "lucide-react";
+import { LocationCard } from "@/components/forms/LocationCard";
+import { ArrowLeft, X, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { CreateLocationDto } from "@/types/location";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+interface ExtendedLocation {
+  city: string;
+  state: string;
+  latitude: number | null;
+  longitude: number | null;
+  addressLine?: string;
+  pincode?: string;
+  country?: string;
+}
 
 interface ProductFormData {
   title: string;
@@ -35,15 +56,19 @@ interface ProductFormData {
   maxRentalDays: number;
   isNegotiable: boolean;
   tags: string[];
+  status: string;
   location: CreateLocationDto | null;
 }
 
-export default function AddProductPage() {
-  const { isAuthenticated } = useAuth();
+export default function EditProductPage() {
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [tagInput, setTagInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<UploadedFile[]>([]);
+
+  const productId = params?.id;
 
   const {
     register,
@@ -51,6 +76,7 @@ export default function AddProductPage() {
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<ProductFormData>({
     defaultValues: {
       title: "",
@@ -64,6 +90,7 @@ export default function AddProductPage() {
       maxRentalDays: 30,
       isNegotiable: false,
       tags: [],
+      status: "available",
       location: null,
     },
   });
@@ -77,20 +104,79 @@ export default function AddProductPage() {
     }
   }, [isAuthenticated, router]);
 
+  // Fetch product details
+  const { data: productData, isLoading: productLoading, error: productError } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => itemsAPI.getById(productId!),
+    enabled: !!productId && isAuthenticated,
+  });
+
   // Fetch categories
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: categoriesAPI.getAll,
   });
 
-  // Create item mutation
-  const createItemMutation = useMutation({
+  // Check if user owns this product
+  const product = productData?.data;
+  const userOwnsProduct = product && user && product.userId === user.id;
+
+  // Populate form with existing data
+  useEffect(() => {
+    if (product) {
+      reset({
+        title: product.title,
+        description: product.description || "",
+        categoryId: product.categoryId,
+        condition: product.condition,
+        rentPricePerDay: product.rentPricePerDay,
+        securityAmount: product.securityAmount || 0,
+        deliveryMode: product.deliveryMode,
+        minRentalDays: product.minRentalDays,
+        maxRentalDays: product.maxRentalDays,
+        isNegotiable: product.isNegotiable,
+        tags: product.tags || [],
+        status: product.status,
+        location: product.location ? {
+          addressLine: (product.location as ExtendedLocation).addressLine || "",
+          city: product.location.city || "",
+          state: product.location.state || "",
+          pincode: (product.location as ExtendedLocation).pincode || "",
+          country: (product.location as ExtendedLocation).country || "",
+          latitude: product.location.latitude || undefined,
+          longitude: product.location.longitude || undefined,
+        } : null,
+      });
+
+      // Populate existing images
+      if (product.images && product.images.length > 0) {
+        const existingImages: UploadedFile[] = product.images.map((img, index) => ({
+          id: `existing-${index}`,
+          name: `Product Image ${index + 1}`,
+          originalName: `product-image-${index + 1}.jpg`,
+          url: img.file.url,
+          fileType: 'image',
+          fileSize: 0,
+          mimeType: 'image/jpeg',
+          isPublic: true,
+          uploadedOn: new Date().toISOString(),
+          userId: product.userId,
+          bucket: 'products',
+          path: img.file.url,
+        }));
+        setUploadedImages(existingImages);
+      }
+    }
+  }, [product, reset]);
+
+  // Update item mutation
+  const updateItemMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      const createData: CreateItemDto = {
+      const updateData: UpdateItemDto = {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        condition: data.condition as CreateItemDto['condition'],
+        condition: data.condition as UpdateItemDto['condition'],
         rentPricePerDay: data.rentPricePerDay,
         securityAmount: data.securityAmount,
         addressData: data.location ? {
@@ -102,23 +188,40 @@ export default function AddProductPage() {
           latitude: data.location.latitude,
           longitude: data.location.longitude,
         } : undefined,
-        deliveryMode: data.deliveryMode as CreateItemDto['deliveryMode'],
+        deliveryMode: data.deliveryMode as UpdateItemDto['deliveryMode'],
         minRentalDays: data.minRentalDays,
         maxRentalDays: data.maxRentalDays,
         isNegotiable: data.isNegotiable,
         tags: data.tags,
+        status: data.status as UpdateItemDto['status'],
         imageUrls: uploadedImages.map(img => img.url),
       };
       
-      return itemsAPI.create(createData);
+      return itemsAPI.update(productId!, updateData);
     },
     onSuccess: () => {
-      toast.success("Product created successfully!");
+      toast.success("Product updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["product", productId] });
       queryClient.invalidateQueries({ queryKey: ["items"] });
       router.push("/dashboard");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to create product");
+      toast.error(error.message || "Failed to update product");
+    },
+  });
+
+  // Delete item mutation
+  const deleteItemMutation = useMutation({
+    mutationFn: async () => {
+      return itemsAPI.delete(productId!);
+    },
+    onSuccess: () => {
+      toast.success("Product deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      router.push("/dashboard");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete product");
     },
   });
 
@@ -128,7 +231,11 @@ export default function AddProductPage() {
       toast.error("Please select a location");
       return;
     }
-    createItemMutation.mutate(data);
+    updateItemMutation.mutate(data);
+  };
+
+  const handleDelete = () => {
+    deleteItemMutation.mutate();
   };
 
   const addTag = () => {
@@ -159,10 +266,38 @@ export default function AddProductPage() {
     );
   }
 
-  if (categoriesLoading) {
+  if (productLoading || categoriesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (productError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Product Not Found</h2>
+          <p className="text-muted-foreground mb-4">The product you&apos;re looking for doesn&apos;t exist.</p>
+          <Button onClick={() => router.push("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userOwnsProduct) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground mb-4">You don&apos;t have permission to edit this product.</p>
+          <Button onClick={() => router.push("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
     );
   }
@@ -179,8 +314,8 @@ export default function AddProductPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold">Add New Product</h1>
-        <p className="text-muted-foreground">Create a new product listing for rent</p>
+        <h1 className="text-3xl font-bold">Edit Product</h1>
+        <p className="text-muted-foreground">Update your product listing</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -189,7 +324,7 @@ export default function AddProductPage() {
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
             <CardDescription>
-              Provide essential details about your product
+              Update essential details about your product
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -220,7 +355,10 @@ export default function AddProductPage() {
 
             <div className="space-y-2">
               <Label htmlFor="categoryId">Category *</Label>
-              <Select onValueChange={(value) => setValue("categoryId", value)}>
+              <Select 
+                onValueChange={(value) => setValue("categoryId", value)}
+                value={watch("categoryId")}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -239,7 +377,10 @@ export default function AddProductPage() {
 
             <div className="space-y-2">
               <Label htmlFor="condition">Condition *</Label>
-              <Select onValueChange={(value) => setValue("condition", value)}>
+              <Select 
+                onValueChange={(value) => setValue("condition", value)}
+                value={watch("condition")}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
@@ -255,6 +396,24 @@ export default function AddProductPage() {
                 <p className="text-sm text-destructive">Condition is required</p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select 
+                onValueChange={(value) => setValue("status", value)}
+                value={watch("status")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="booked">Booked</SelectItem>
+                  <SelectItem value="maintenance">Under Maintenance</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -263,7 +422,7 @@ export default function AddProductPage() {
           <CardHeader>
             <CardTitle>Pricing & Rental Terms</CardTitle>
             <CardDescription>
-              Set your pricing and rental conditions
+              Update your pricing and rental conditions
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -341,7 +500,10 @@ export default function AddProductPage() {
 
             <div className="space-y-2">
               <Label htmlFor="deliveryMode">Delivery Mode *</Label>
-              <Select onValueChange={(value) => setValue("deliveryMode", value)} defaultValue="none">
+              <Select 
+                onValueChange={(value) => setValue("deliveryMode", value)}
+                value={watch("deliveryMode")}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -367,15 +529,14 @@ export default function AddProductPage() {
         </Card>
 
         {/* Location */}
-        <LocationSelector
+        <LocationCard
           title="Location"
-          description="This helps potential renters find and reach you"
+          description="Update where the product is located"
           setValue={setValue}
           watch={watch}
           errors={errors}
           locationFieldName="location"
           required={true}
-          enableAddressBook={true}
         />
 
         {/* Product Images */}
@@ -383,7 +544,7 @@ export default function AddProductPage() {
           <CardHeader>
             <CardTitle>Product Images</CardTitle>
             <CardDescription>
-              Upload high-quality images of your product
+              Update product images
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -402,7 +563,7 @@ export default function AddProductPage() {
           <CardHeader>
             <CardTitle>Tags</CardTitle>
             <CardDescription>
-              Add tags to help users find your product
+              Update tags to help users find your product
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -441,20 +602,54 @@ export default function AddProductPage() {
 
         {/* Form Actions */}
         <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={createItemMutation.isPending}
-            className="min-w-[120px]"
-          >
-            {createItemMutation.isPending ? (
-              <LoadingSpinner />
-            ) : (
-              "Create Product"
-            )}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                type="button" 
+                variant="outline"
+                disabled={deleteItemMutation.isPending}
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {deleteItemMutation.isPending ? "Deleting..." : "Delete Product"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="border-none shadow-lg">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your product listing 
+                  and remove all associated data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDelete}
+                  className="bg-red-500 text-white hover:bg-red-600 focus:ring-red-500"
+                >
+                  Delete Product
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={updateItemMutation.isPending}
+              className="min-w-[120px]"
+            >
+              {updateItemMutation.isPending ? (
+                <LoadingSpinner />
+              ) : (
+                "Update Product"
+              )}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

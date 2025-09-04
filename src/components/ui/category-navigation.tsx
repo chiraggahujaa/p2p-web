@@ -3,7 +3,7 @@
 import React from "react";
 import { cn } from "@/utils/ui";
 import Image from "next/image";
-import { Category } from "@/lib/api/categories";
+import { type Category } from "@/types/categories";
 import { HorizontalScroller } from "@/components/ui/horizontal-scroller";
 
 interface CategoryNavigationProps {

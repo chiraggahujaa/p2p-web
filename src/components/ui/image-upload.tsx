@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Upload, AlertCircle, CheckCircle, Eye, Trash2, Plus, Minus } from "lucide-react";
 import { cn } from "@/utils/ui";
-import { type UploadedFile, filesAPI } from "@/lib/api/items";
+import { filesAPI } from "@/lib/api/items";
+import { type UploadedFile } from "@/types/items";
 
 export interface ImageUploadProps {
   maxFiles?: number;

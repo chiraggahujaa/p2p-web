@@ -3,7 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/ui/product-card";
 import { Pagination } from "@/components/ui/pagination";
-import { itemsAPI, type Item } from "@/lib/api/items";
+import { itemsAPI } from "@/lib/api/items";
+import { type Item } from "@/types/items";
 import { useHomeData } from "../hooks/useHomeData";
 import { EmptyState } from "./EmptyState";
 

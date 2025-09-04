@@ -104,3 +104,70 @@ export interface ItemsApiResponse {
     hasPrev: boolean;
   };
 }
+
+// DTOs for creating and updating items
+export interface CreateItemDto {
+  title: string;
+  description?: string;
+  categoryId: string;
+  condition: 'new' | 'likeNew' | 'good' | 'fair' | 'poor';
+  securityAmount?: number;
+  rentPricePerDay: number;
+  addressData?: {
+    addressLine: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  deliveryMode?: 'none' | 'pickup' | 'delivery' | 'both';
+  minRentalDays?: number;
+  maxRentalDays?: number;
+  isNegotiable?: boolean;
+  tags?: string[];
+  imageUrls?: string[];
+}
+
+export interface UpdateItemDto {
+  title?: string;
+  description?: string;
+  categoryId?: string;
+  condition?: 'new' | 'likeNew' | 'good' | 'fair' | 'poor';
+  securityAmount?: number;
+  rentPricePerDay?: number;
+  addressData?: {
+    addressLine: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  deliveryMode?: 'none' | 'pickup' | 'delivery' | 'both';
+  minRentalDays?: number;
+  maxRentalDays?: number;
+  isNegotiable?: boolean;
+  tags?: string[];
+  status?: 'available' | 'booked' | 'in_transit' | 'unavailable';
+  imageUrls?: string[];
+}
+
+// File upload related interfaces
+export interface UploadedFile {
+  id: string;
+  userId: string;
+  name: string;
+  originalName: string;
+  url: string;
+  fileType: string;
+  fileSize: number;
+  mimeType: string;
+  isPublic: boolean;
+  bucket: string;
+  path: string;
+  uploadedOn: string;
+  altText?: string | null;
+}

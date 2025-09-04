@@ -1,25 +1,12 @@
 import api from './axios';
+import {
+  type CitiesResponse,
+  type CityCoordinates,
+  type CityCoordinatesResponse,
+  type GetCitiesOptions
+} from '../../types/cities';
 
-export interface CitiesResponse {
-  cities: string[];
-}
-
-export interface CityCoordinates {
-  name: string;
-  latitude: number;
-  longitude: number;
-}
-
-export interface CityCoordinatesResponse {
-  success: boolean;
-  data: CityCoordinates;
-}
-
-type GetCitiesOptions = {
-  lat?: number;
-  lon?: number;
-  prefer?: string; // optional city name hint
-};
+export type { CitiesResponse, CityCoordinates, CityCoordinatesResponse, GetCitiesOptions };
 
 export const citiesApi = {
   getCities: async (options?: GetCitiesOptions): Promise<CitiesResponse> => {

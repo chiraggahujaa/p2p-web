@@ -1,27 +1,8 @@
 import api from './axios';
+import { ApiResponse } from '@/types/api';
+import { type Category } from '../../types/categories';
 
-export interface Category {
-  id: string;
-  categoryName: string;
-  description?: string;
-  iconUrl?: string;
-  bannerUrl?: string;
-  parentCategoryId?: string;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  // Relations (if any)
-  parentCategory?: Category;
-  subcategories?: Category[];
-  itemCount?: number;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-}
+export type { Category };
 
 export const categoriesAPI = {
   // Get all categories
