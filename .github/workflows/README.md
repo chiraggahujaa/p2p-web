@@ -1,48 +1,37 @@
 # GitHub Workflows
 
-This directory contains GitHub Actions workflows for automated CI/CD processes.
+Automated CI/CD workflows for quality assurance, deployment, and code review.
 
 ## Workflows
 
 ### `ci-cd.yml` - Main CI/CD Pipeline
-**Triggers:**
-- Push to any branch (quality checks)
-- PRs to main, staging, production
-- Manual workflow dispatch
-
+**Triggers:** Push to any branch, PRs to main/staging/production, manual dispatch
 **Jobs:**
-1. **Security Scan** - Vulnerability scanning with Trivy
-2. **Test & Lint** - TypeScript check, ESLint, unit tests (if configured)
-3. **Build & Performance** - Application build and artifact upload
-4. **E2E Tests** - End-to-end testing (if Playwright configured)
-5. **Deploy Staging** - Auto-deploy when pushing to `staging` branch
-6. **Deploy Production** - Auto-deploy when pushing to `production` branch
+1. **Security Scan** - Trivy vulnerability scanning and dependency audit
+2. **Test & Lint** - TypeScript checks, ESLint, unit tests across Node.js 18/20/22
+3. **Build & Performance** - Application build with performance validation
+4. **E2E Tests** - Playwright tests for PRs and deployment branches
 
-### `claude-code-review.yml` - Code Review
-Automated code review using Claude for pull requests.
+### `claude-code-review.yml` - Automated Code Review
+**Triggers:** Pull request open/sync
+**Purpose:** Claude-powered code review focusing on bugs and security issues
+
+### `claude.yml` - Interactive Claude Assistant
+**Triggers:** Issue comments, PR comments, new issues mentioning @claude
+**Purpose:** On-demand Claude assistance via GitHub comments
+
+### `scheduled-deployment.yml` - Daily Production Deploy
+**Triggers:** Daily at 9 PM UTC, manual dispatch with force option
+**Purpose:** Automated main→production deployments with conflict detection and rollback protection
 
 ## Required Secrets
 
-Add these to your GitHub repository secrets:
-
 ```
-VERCEL_TOKEN          # Vercel deployment token
-ORG_ID               # Vercel organization ID  
-PROJECT_ID           # Vercel project ID
-TEAM_ID              # Vercel team ID (if using teams)
-CLAUDE_CODE_OAUTH_TOKEN  # For Claude code reviews
+CLAUDE_CODE_OAUTH_TOKEN  # For Claude code reviews and assistance
 ```
 
 ## Branch Strategy
 
 - **Any Branch** → Quality checks (security, lint, build)
-- **`staging`** → Deploys to staging environment
-- **`production`** → Deploys to production environment
-- **PRs** → Full pipeline without deployment
-
-## Usage
-
-1. Push code to any branch for quality checks
-2. Push to `staging` branch for staging deployment
-3. Push to `production` branch for production deployment
-4. Create PRs for code review and testing
+- **`production`** → Automatic Vercel deployment
+- **PRs** → Full pipeline + code review
