@@ -183,6 +183,7 @@ export function ProfileTab({
           profile={profileData}
           userId={userId}
           className="mb-6 py-0"
+          onEditClick={handleEditStart}
         />
       )}
 

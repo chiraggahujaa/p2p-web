@@ -14,11 +14,12 @@ interface ProfileCompletionBarProps {
   profile?: MeProfile | null;
   userId: string;
   className?: string;
+  onEditClick?: () => void;
 }
 
-export function ProfileCompletionBar({ profile, userId, className }: ProfileCompletionBarProps) {
+export function ProfileCompletionBar({ profile, userId, className, onEditClick }: ProfileCompletionBarProps) {
   const completion = useMemo(() => {
-    const requiredKeys = ['fullName', 'email', 'phoneNumber', 'avatarUrl', 'bio'] as const;
+    const requiredKeys = ['fullName', 'email', 'phoneNumber', 'avatarUrl', 'gender', 'dob', 'bio'] as const;
     const p = profile || {} as MeProfile;
     const present = requiredKeys.filter((key) => !!p[key]);
     
@@ -87,10 +88,12 @@ export function ProfileCompletionBar({ profile, userId, className }: ProfileComp
           </div>
 
           <div className="flex-shrink-0 flex gap-2">
-            <Button size="sm" variant="outline" asChild>
-              <Link href={`/profile/${userId}/edit`}>
-                Complete Profile
-              </Link>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={onEditClick || (() => window.location.href = `/profile/${userId}/edit`)}
+            >
+              Complete Profile
             </Button>
             {!completion.isVerified && (
               <Button size="sm" asChild>

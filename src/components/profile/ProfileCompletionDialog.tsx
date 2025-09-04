@@ -14,11 +14,19 @@ export function ProfileCompletionDialog({ profile, userId }: ProfileCompletionDi
   const [open, setOpen] = useState(false);
 
   const completion = useMemo(() => {
-    const requiredKeys = ['fullName', 'email', 'phoneNumber', 'avatarUrl', 'bio'] as const;
+    const requiredKeys = ['fullName', 'email', 'phoneNumber', 'gender', 'dob', 'bio'] as const;
     const p = (profile || {}) as Record<string, unknown>;
     const present = requiredKeys.filter((key) => !!p[key]);
-    const percent = Math.round((present.length / requiredKeys.length) * 100);
-    return Math.max(0, Math.min(100, percent));
+    
+    // Profile completion is 50% of total
+    const profilePercent = (present.length / requiredKeys.length) * 50;
+    
+    // KYC verification is the other 50%
+    const kycPercent = p.isVerified ? 50 : 0;
+    
+    const totalPercent = Math.round(profilePercent + kycPercent);
+    
+    return Math.max(0, Math.min(100, totalPercent));
   }, [profile]);
 
   useEffect(() => {
