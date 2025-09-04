@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 import {
   type Item,
   type SearchFilters,
@@ -7,50 +7,80 @@ import {
   type ItemsApiResponse,
   type CreateItemDto,
   type UpdateItemDto,
-  type UploadedFile
-} from '../../types/items';
+  type UploadedFile,
+} from "../../types/items";
 
 export type { Item, CreateItemDto, UpdateItemDto, UploadedFile };
 
-import { ApiResponse, PaginatedResponse } from '@/types/api';
+import { ApiResponse, PaginatedResponse } from "@/types/api";
 
 export const itemsAPI = {
   // Search items with filters
-  search: async (filters: SearchFilters = {}): Promise<ApiResponse<PaginatedResponse<Item>>> => {
+  search: async (
+    filters: SearchFilters = {}
+  ): Promise<ApiResponse<PaginatedResponse<Item>>> => {
     const queryParams = new URLSearchParams();
-    
-    console.log('Filters', filters); // TODO : Needs to be tested
+
+    console.log("Filters", filters); // TODO : Needs to be tested
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        if (key === 'location' && typeof value === 'object' && !Array.isArray(value)) {
+        if (
+          key === "location" &&
+          typeof value === "object" &&
+          !Array.isArray(value)
+        ) {
           // Handle location object with nested properties
-          const location = value as { latitude: number; longitude: number; radius?: number };
-          queryParams.append('location[latitude]', location.latitude.toString());
-          queryParams.append('location[longitude]', location.longitude.toString());
+          const location = value as {
+            latitude: number;
+            longitude: number;
+            radius?: number;
+          };
+          queryParams.append(
+            "location[latitude]",
+            location.latitude.toString()
+          );
+          queryParams.append(
+            "location[longitude]",
+            location.longitude.toString()
+          );
           if (location.radius) {
-            queryParams.append('location[radius]', location.radius.toString());
+            queryParams.append("location[radius]", location.radius.toString());
           }
-        } else if (key === 'priceRange' && typeof value === 'object' && !Array.isArray(value)) {
+        } else if (
+          key === "priceRange" &&
+          typeof value === "object" &&
+          !Array.isArray(value)
+        ) {
           // Handle priceRange object
           const priceRange = value as { min?: number; max?: number };
           if (priceRange.min !== undefined) {
-            queryParams.append('priceRange[min]', priceRange.min.toString());
+            queryParams.append("priceRange[min]", priceRange.min.toString());
           }
           if (priceRange.max !== undefined) {
-            queryParams.append('priceRange[max]', priceRange.max.toString());
+            queryParams.append("priceRange[max]", priceRange.max.toString());
           }
-        } else if (key === 'availability' && typeof value === 'object' && !Array.isArray(value)) {
+        } else if (
+          key === "availability" &&
+          typeof value === "object" &&
+          !Array.isArray(value)
+        ) {
           // Handle availability object
-          const availability = value as { startDate?: string; endDate?: string };
+          const availability = value as {
+            startDate?: string;
+            endDate?: string;
+          };
           if (availability.startDate) {
-            queryParams.append('availability[startDate]', availability.startDate);
+            queryParams.append(
+              "availability[startDate]",
+              availability.startDate
+            );
           }
           if (availability.endDate) {
-            queryParams.append('availability[endDate]', availability.endDate);
+            queryParams.append("availability[endDate]", availability.endDate);
           }
         } else if (Array.isArray(value)) {
           // Handle arrays by appending each value
-          value.forEach(v => queryParams.append(key, v.toString()));
+          value.forEach((v) => queryParams.append(key, v.toString()));
         } else {
           // Handle primitive values
           queryParams.append(key, value.toString());
@@ -58,19 +88,20 @@ export const itemsAPI = {
       }
     });
 
-    const response = await api.get(`/api/items/search?${queryParams.toString()}`);
+    const response = await api.get(
+      `/api/items/search?${queryParams.toString()}`
+    );
     const apiResponse: ItemsApiResponse = response.data;
-    
+
     return {
       success: apiResponse.success,
-      message: 'Items retrieved successfully',
+      message: "Items retrieved successfully",
       data: {
         data: apiResponse.data,
-        pagination: apiResponse.pagination
-      }
+        pagination: apiResponse.pagination,
+      },
     };
   },
-
 
   // Get popular items
   getPopular: async (limit: number = 10): Promise<ApiResponse<Item[]>> => {
@@ -78,8 +109,8 @@ export const itemsAPI = {
     const apiResponse = response.data;
     return {
       success: apiResponse.success,
-      message: apiResponse.message || 'Popular items retrieved successfully',
-      data: apiResponse.data
+      message: apiResponse.message || "Popular items retrieved successfully",
+      data: apiResponse.data,
     };
   },
 
@@ -89,8 +120,8 @@ export const itemsAPI = {
     const apiResponse = response.data;
     return {
       success: apiResponse.success,
-      message: apiResponse.message || 'Featured items retrieved successfully',
-      data: apiResponse.data
+      message: apiResponse.message || "Featured items retrieved successfully",
+      data: apiResponse.data,
     };
   },
 
@@ -100,34 +131,46 @@ export const itemsAPI = {
     const apiResponse = response.data;
     return {
       success: apiResponse.success,
-      message: apiResponse.message || 'Item retrieved successfully',
-      data: apiResponse.data
+      message: apiResponse.message || "Item retrieved successfully",
+      data: apiResponse.data,
     };
   },
 
   // Get similar items
-  getSimilar: async (id: string, limit: number = 6): Promise<ApiResponse<Item[]>> => {
+  getSimilar: async (
+    id: string,
+    limit: number = 6
+  ): Promise<ApiResponse<Item[]>> => {
     const response = await api.get(`/api/items/${id}/similar?limit=${limit}`);
     const apiResponse = response.data;
     return {
       success: apiResponse.success,
-      message: apiResponse.message || 'Similar items retrieved successfully',
-      data: apiResponse.data
+      message: apiResponse.message || "Similar items retrieved successfully",
+      data: apiResponse.data,
     };
   },
 
   // Check availability
-  checkAvailability: async (id: string, dates: AvailabilityCheck): Promise<ApiResponse<{ available: boolean; conflicts?: unknown[] }>> => {
+  checkAvailability: async (
+    id: string,
+    dates: AvailabilityCheck
+  ): Promise<ApiResponse<{ available: boolean; conflicts?: unknown[] }>> => {
     const response = await api.post(`/api/items/${id}/availability`, dates);
     return response.data;
   },
 
   // Calculate pricing for date range
-  calculatePrice: (item: Item, startDate: string, endDate: string): PriceCalculation => {
+  calculatePrice: (
+    item: Item,
+    startDate: string,
+    endDate: string
+  ): PriceCalculation => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const totalDays = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
     const basePrice = item.rentPricePerDay * totalDays;
     let discountPercentage = 0;
     let discountAmount = 0;
@@ -158,18 +201,25 @@ export const itemsAPI = {
   },
 
   // Get items by category
-  getByCategory: async (categoryId: string, limit: number = 20, page: number = 1): Promise<ApiResponse<PaginatedResponse<Item>>> => {
+  getByCategory: async (
+    categoryId: string,
+    limit: number = 20,
+    page: number = 1
+  ): Promise<ApiResponse<PaginatedResponse<Item>>> => {
     return itemsAPI.search({ categoryId, limit, page });
   },
 
   // Create new item
   create: async (data: CreateItemDto): Promise<ApiResponse<Item>> => {
-    const response = await api.post('/api/items', data);
+    const response = await api.post("/api/items", data);
     return response.data;
   },
 
   // Update existing item
-  update: async (id: string, data: UpdateItemDto): Promise<ApiResponse<Item>> => {
+  update: async (
+    id: string,
+    data: UpdateItemDto
+  ): Promise<ApiResponse<Item>> => {
     const response = await api.put(`/api/items/${id}`, data);
     return response.data;
   },
@@ -177,40 +227,6 @@ export const itemsAPI = {
   // Delete item
   delete: async (id: string): Promise<ApiResponse<void>> => {
     const response = await api.delete(`/api/items/${id}`);
-    return response.data;
-  },
-};
-
-
-// File upload API
-export const filesAPI = {
-  // Upload product images
-  uploadProductImages: async (files: File[]): Promise<ApiResponse<UploadedFile[]>> => {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('images', file);
-    });
-    formData.append('bucket', 'images');
-    formData.append('isPublic', 'true');
-
-    const response = await api.post('/api/files/upload/product-images', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  },
-
-  // Delete file
-  deleteFile: async (fileId: string): Promise<ApiResponse<void>> => {
-    const response = await api.delete(`/api/files/${fileId}`);
-    return response.data;
-  },
-
-  // Get user files
-  getUserFiles: async (fileType?: string): Promise<ApiResponse<UploadedFile[]>> => {
-    const params = fileType ? { fileType } : {};
-    const response = await api.get('/api/files/my-files', { params });
     return response.data;
   },
 };

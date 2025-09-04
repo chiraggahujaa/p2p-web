@@ -1,24 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import ProfileCompletionBar from '@/components/profile/ProfileCompletionBar';
-import { AvatarEditor } from '@/components/profile/AvatarEditor';
-import { Edit2, Save, X, BadgeCheck, Calendar, Mail, Phone, Eye, EyeOff, MapPin, User } from 'lucide-react';
-import { PublicUserProfile, MeProfile, UpdateMeProfilePayload } from '@/types/user';
-import { UseMutationResult } from '@tanstack/react-query';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import ProfileCompletionBar from "@/components/profile/ProfileCompletionBar";
+import { AvatarEditor } from "@/components/profile/AvatarEditor";
+import {
+  Edit2,
+  Save,
+  X,
+  BadgeCheck,
+  Calendar,
+  Mail,
+  Phone,
+  Eye,
+  EyeOff,
+  MapPin,
+  User,
+} from "lucide-react";
+import {
+  PublicUserProfile,
+  MeProfile,
+  UpdateMeProfilePayload,
+} from "@/types/user";
+import { UseMutationResult } from "@tanstack/react-query";
 
 interface ProfileTabProps {
   profileData: PublicUserProfile | MeProfile | undefined;
   isOwnProfile: boolean;
   userId: string;
-  updateProfileMutation: UseMutationResult<unknown, Error, UpdateMeProfilePayload, unknown>;
+  updateProfileMutation: UseMutationResult<
+    unknown,
+    Error,
+    UpdateMeProfilePayload,
+    unknown
+  >;
 }
 
 interface EditForm {
@@ -26,56 +53,63 @@ interface EditForm {
   phoneNumber: string;
   gender: string;
   dob: string;
-  dobVisibility: 'private' | 'friends' | 'public';
+  dobVisibility: "private" | "friends" | "public";
   bio: string;
   avatarUrl: string;
 }
 
-export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMutation }: ProfileTabProps) {
+export function ProfileTab({
+  profileData,
+  isOwnProfile,
+  userId,
+  updateProfileMutation,
+}: ProfileTabProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isAvatarEditing, setIsAvatarEditing] = useState(false);
   const [editForm, setEditForm] = useState<EditForm>({
-    fullName: '',
-    phoneNumber: '',
-    gender: '',
-    dob: '',
-    dobVisibility: 'private',
-    bio: '',
-    avatarUrl: '',
+    fullName: "",
+    phoneNumber: "",
+    gender: "",
+    dob: "",
+    dobVisibility: "private",
+    bio: "",
+    avatarUrl: "",
   });
 
   // Type guard function
-  const isMyProfile = (profile: PublicUserProfile | MeProfile | undefined): profile is MeProfile => {
+  const isMyProfile = (
+    profile: PublicUserProfile | MeProfile | undefined
+  ): profile is MeProfile => {
     return isOwnProfile && profile !== undefined;
   };
 
   const handleEditStart = () => {
     // Only allow editing for own profile
     if (!isOwnProfile || !isMyProfile(profileData)) return;
-    
+
     setEditForm({
-      fullName: profileData.fullName || '',
-      phoneNumber: profileData.phoneNumber || '',
-      gender: profileData.gender || '',
-      dob: profileData.dob || '',
-      dobVisibility: (profileData.dobVisibility as 'private' | 'friends' | 'public') || 'private',
-      bio: profileData.bio || '',
-      avatarUrl: profileData.avatarUrl || '',
+      fullName: profileData.fullName || "",
+      phoneNumber: profileData.phoneNumber || "",
+      gender: profileData.gender || "",
+      dob: profileData.dob || "",
+      dobVisibility:
+        (profileData.dobVisibility as "private" | "friends" | "public") ||
+        "private",
+      bio: profileData.bio || "",
+      avatarUrl: profileData.avatarUrl || "",
     });
     setIsEditing(true);
   };
 
   const handleEditCancel = () => {
     setIsEditing(false);
-    setIsAvatarEditing(false);
-    setEditForm({ 
-      fullName: '', 
-      phoneNumber: '', 
-      gender: '', 
-      dob: '', 
-      dobVisibility: 'private',
-      bio: '',
-      avatarUrl: ''
+    setEditForm({
+      fullName: "",
+      phoneNumber: "",
+      gender: "",
+      dob: "",
+      dobVisibility: "private",
+      bio: "",
+      avatarUrl: "",
     });
   };
 
@@ -83,21 +117,23 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
     if (!editForm.fullName.trim()) {
       return;
     }
-    
-    updateProfileMutation.mutate({
-      fullName: editForm.fullName,
-      phoneNumber: editForm.phoneNumber || undefined,
-      gender: editForm.gender || undefined,
-      dob: editForm.dob || undefined,
-      dobVisibility: editForm.dobVisibility,
-      bio: editForm.bio || undefined,
-      avatarUrl: editForm.avatarUrl || undefined,
-    }, {
-      onSuccess: () => {
-        setIsEditing(false);
-        setIsAvatarEditing(false);
+
+    updateProfileMutation.mutate(
+      {
+        fullName: editForm.fullName,
+        phoneNumber: editForm.phoneNumber || undefined,
+        gender: editForm.gender || undefined,
+        dob: editForm.dob || undefined,
+        dobVisibility: editForm.dobVisibility,
+        bio: editForm.bio || undefined,
+        avatarUrl: editForm.avatarUrl || undefined,
+      },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
       }
-    });
+    );
   };
 
   return (
@@ -108,19 +144,21 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
           <div className="flex gap-2">
             {isEditing ? (
               <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleEditCancel}
                   disabled={updateProfileMutation.isPending}
                 >
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={handleEditSave}
-                  disabled={updateProfileMutation.isPending || !editForm.fullName.trim()}
+                  disabled={
+                    updateProfileMutation.isPending || !editForm.fullName.trim()
+                  }
                 >
                   {updateProfileMutation.isPending ? (
                     <LoadingSpinner className="h-4 w-4 mr-2" />
@@ -141,26 +179,30 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
       </div>
 
       {isOwnProfile && isMyProfile(profileData) && (
-        <ProfileCompletionBar profile={profileData} userId={userId} className="mb-6 py-0" />
+        <ProfileCompletionBar
+          profile={profileData}
+          userId={userId}
+          className="mb-6 py-0"
+        />
       )}
 
       <div className="flex gap-6">
         {/* Avatar Editor */}
         <AvatarEditor
-          currentAvatarUrl={isEditing ? editForm.avatarUrl : profileData?.avatarUrl || undefined}
-          fullName={isEditing ? editForm.fullName : profileData?.fullName || undefined}
+          currentAvatarUrl={
+            isEditing ? editForm.avatarUrl : profileData?.avatarUrl || undefined
+          }
+          fullName={
+            isEditing ? editForm.fullName : profileData?.fullName || undefined
+          }
           isVerified={profileData?.isVerified || undefined}
-          isEditing={isOwnProfile && isAvatarEditing}
-          onAvatarChange={(avatarUrl) => setEditForm(prev => ({ ...prev, avatarUrl: avatarUrl || '' }))}
-          onEditStart={() => isOwnProfile && setIsAvatarEditing(true)}
-          onEditCancel={() => setIsAvatarEditing(false)}
-          onEditSave={(avatarUrl) => {
-            setEditForm(prev => ({ ...prev, avatarUrl: avatarUrl || '' }));
-            setIsAvatarEditing(false);
-          }}
+          isEditing={isOwnProfile && isEditing}
+          onAvatarChange={(avatarUrl) =>
+            setEditForm((prev) => ({ ...prev, avatarUrl: avatarUrl || "" }))
+          }
           disabled={!isOwnProfile || updateProfileMutation.isPending}
-          showUploadButton={isOwnProfile}
           className="flex-shrink-0"
+          filePath="profile-avatars"
         />
 
         {/* Public Info Card */}
@@ -180,11 +222,18 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                 {isEditing ? (
                   <Input
                     value={editForm.fullName}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        fullName: e.target.value,
+                      }))
+                    }
                     placeholder="Enter your full name"
                   />
                 ) : (
-                  <div className="font-medium">{profileData?.fullName || '—'}</div>
+                  <div className="font-medium">
+                    {profileData?.fullName || "—"}
+                  </div>
                 )}
               </div>
 
@@ -195,7 +244,7 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                     <Mail className="h-3 w-3" />
                     Email
                   </div>
-                  <div className="font-medium">{profileData.email || '—'}</div>
+                  <div className="font-medium">{profileData.email || "—"}</div>
                 </div>
               )}
 
@@ -209,11 +258,18 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                   {isEditing ? (
                     <Input
                       value={editForm.phoneNumber}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          phoneNumber: e.target.value,
+                        }))
+                      }
                       placeholder="Enter your phone number"
                     />
                   ) : (
-                    <div className="font-medium">{profileData.phoneNumber || '—'}</div>
+                    <div className="font-medium">
+                      {profileData.phoneNumber || "—"}
+                    </div>
                   )}
                 </div>
               )}
@@ -221,9 +277,16 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
               {/* Gender - Only for own profile */}
               {isOwnProfile && isMyProfile(profileData) && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">Gender</div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Gender
+                  </div>
                   {isEditing ? (
-                    <Select value={editForm.gender} onValueChange={(value) => setEditForm(prev => ({ ...prev, gender: value }))}>
+                    <Select
+                      value={editForm.gender}
+                      onValueChange={(value) =>
+                        setEditForm((prev) => ({ ...prev, gender: value }))
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -231,13 +294,19 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
-                        <SelectItem value="preferNotToSay">Prefer not to say</SelectItem>
+                        <SelectItem value="preferNotToSay">
+                          Prefer not to say
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
                     <div className="font-medium">
-                      {profileData.gender === 'preferNotToSay' ? 'Prefer not to say' : 
-                       profileData.gender ? profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1) : '—'}
+                      {profileData.gender === "preferNotToSay"
+                        ? "Prefer not to say"
+                        : profileData.gender
+                        ? profileData.gender.charAt(0).toUpperCase() +
+                          profileData.gender.slice(1)
+                        : "—"}
                     </div>
                   )}
                 </div>
@@ -254,41 +323,64 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                     <Input
                       type="date"
                       value={editForm.dob}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, dob: e.target.value }))}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          dob: e.target.value,
+                        }))
+                      }
                     />
                   ) : (
                     <div className="font-medium">
-                      {profileData.dob ? new Date(profileData.dob).toLocaleDateString() : '—'}
+                      {profileData.dob
+                        ? new Date(profileData.dob).toLocaleDateString()
+                        : "—"}
                     </div>
                   )}
                 </div>
               )}
 
               {/* DOB Visibility - Only for own profile */}
-              {isOwnProfile && isMyProfile(profileData) && (isEditing || profileData.dob) && (
-                <div>
-                  <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                    {profileData.dobVisibility === 'public' ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                    DOB Visibility
-                  </div>
-                  {isEditing ? (
-                    <Select value={editForm.dobVisibility} onValueChange={(value: 'private' | 'friends' | 'public') => setEditForm(prev => ({ ...prev, dobVisibility: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="private">Private</SelectItem>
-                        <SelectItem value="friends">Friends only</SelectItem>
-                        <SelectItem value="public">Public</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="font-medium capitalize">
-                      {profileData.dobVisibility || 'Private'}
+              {isOwnProfile &&
+                isMyProfile(profileData) &&
+                (isEditing || profileData.dob) && (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                      {profileData.dobVisibility === "public" ? (
+                        <Eye className="h-3 w-3" />
+                      ) : (
+                        <EyeOff className="h-3 w-3" />
+                      )}
+                      DOB Visibility
                     </div>
-                  )}
-                </div>
-              )}
+                    {isEditing ? (
+                      <Select
+                        value={editForm.dobVisibility}
+                        onValueChange={(
+                          value: "private" | "friends" | "public"
+                        ) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            dobVisibility: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="friends">Friends only</SelectItem>
+                          <SelectItem value="public">Public</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="font-medium capitalize">
+                        {profileData.dobVisibility || "Private"}
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
 
             <Separator />
@@ -296,8 +388,12 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
             {/* Status Information */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <div className="text-sm text-muted-foreground mb-2">Trust Score</div>
-                <div className="font-medium text-lg">{profileData?.trustScore ?? 0}</div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Trust Score
+                </div>
+                <div className="font-medium text-lg">
+                  {profileData?.trustScore ?? 0}
+                </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
@@ -319,9 +415,13 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                 </div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground mb-2">Member Since</div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Member Since
+                </div>
                 <div className="font-medium">
-                  {profileData?.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : '—'}
+                  {profileData?.createdAt
+                    ? new Date(profileData.createdAt).toLocaleDateString()
+                    : "—"}
                 </div>
               </div>
             </div>
@@ -336,7 +436,9 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
                     Location
                   </div>
                   <div className="font-medium">
-                    {[profileData.location.city, profileData.location.state].filter(Boolean).join(', ') || '—'}
+                    {[profileData.location.city, profileData.location.state]
+                      .filter(Boolean)
+                      .join(", ") || "—"}
                   </div>
                 </div>
               </>
@@ -350,13 +452,17 @@ export function ProfileTab({ profileData, isOwnProfile, userId, updateProfileMut
               {isEditing ? (
                 <Textarea
                   value={editForm.bio}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, bio: e.target.value }))
+                  }
                   placeholder="Tell others about yourself..."
                   className="max-w-2xl"
                   rows={3}
                 />
               ) : (
-                <div className="font-medium whitespace-pre-wrap">{profileData?.bio || '—'}</div>
+                <div className="font-medium whitespace-pre-wrap">
+                  {profileData?.bio || "—"}
+                </div>
               )}
             </div>
           </CardContent>

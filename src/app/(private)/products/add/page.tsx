@@ -10,8 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { categoriesAPI } from "@/lib/api/categories";
@@ -90,26 +102,28 @@ export default function AddProductPage() {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        condition: data.condition as CreateItemDto['condition'],
+        condition: data.condition as CreateItemDto["condition"],
         rentPricePerDay: data.rentPricePerDay,
         securityAmount: data.securityAmount,
-        addressData: data.location ? {
-          addressLine: data.location.addressLine,
-          city: data.location.city,
-          state: data.location.state,
-          pincode: data.location.pincode,
-          country: data.location.country,
-          latitude: data.location.latitude,
-          longitude: data.location.longitude,
-        } : undefined,
-        deliveryMode: data.deliveryMode as CreateItemDto['deliveryMode'],
+        addressData: data.location
+          ? {
+              addressLine: data.location.addressLine,
+              city: data.location.city,
+              state: data.location.state,
+              pincode: data.location.pincode,
+              country: data.location.country,
+              latitude: data.location.latitude,
+              longitude: data.location.longitude,
+            }
+          : undefined,
+        deliveryMode: data.deliveryMode as CreateItemDto["deliveryMode"],
         minRentalDays: data.minRentalDays,
         maxRentalDays: data.maxRentalDays,
         isNegotiable: data.isNegotiable,
         tags: data.tags,
-        imageUrls: uploadedImages.map(img => img.url),
+        imageUrls: uploadedImages.map((img) => img.url),
       };
-      
+
       return itemsAPI.create(createData);
     },
     onSuccess: () => {
@@ -140,7 +154,7 @@ export default function AddProductPage() {
   };
 
   const removeTag = (tagToRemove: string) => {
-    const newTags = watchedTags.filter(tag => tag !== tagToRemove);
+    const newTags = watchedTags.filter((tag) => tag !== tagToRemove);
     setValue("tags", newTags);
   };
 
@@ -172,15 +186,17 @@ export default function AddProductPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
-        <Link 
-          href="/dashboard" 
+        <Link
+          href="/dashboard"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
         <h1 className="text-3xl font-bold">Add New Product</h1>
-        <p className="text-muted-foreground">Create a new product listing for rent</p>
+        <p className="text-muted-foreground">
+          Create a new product listing for rent
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -198,13 +214,18 @@ export default function AddProductPage() {
               <Input
                 id="title"
                 placeholder="e.g., Professional DSLR Camera"
-                {...register("title", { 
+                {...register("title", {
                   required: "Product title is required",
-                  minLength: { value: 5, message: "Title must be at least 5 characters" }
+                  minLength: {
+                    value: 5,
+                    message: "Title must be at least 5 characters",
+                  },
                 })}
               />
               {errors.title && (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.title.message}
+                </p>
               )}
             </div>
 
@@ -252,7 +273,9 @@ export default function AddProductPage() {
                 </SelectContent>
               </Select>
               {errors.condition && (
-                <p className="text-sm text-destructive">Condition is required</p>
+                <p className="text-sm text-destructive">
+                  Condition is required
+                </p>
               )}
             </div>
           </CardContent>
@@ -282,7 +305,9 @@ export default function AddProductPage() {
                   })}
                 />
                 {errors.rentPricePerDay && (
-                  <p className="text-sm text-destructive">{errors.rentPricePerDay.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.rentPricePerDay.message}
+                  </p>
                 )}
               </div>
 
@@ -294,7 +319,10 @@ export default function AddProductPage() {
                   min="0"
                   placeholder="500"
                   {...register("securityAmount", {
-                    min: { value: 0, message: "Security amount cannot be negative" },
+                    min: {
+                      value: 0,
+                      message: "Security amount cannot be negative",
+                    },
                     valueAsNumber: true,
                   })}
                 />
@@ -311,12 +339,17 @@ export default function AddProductPage() {
                   placeholder="1"
                   {...register("minRentalDays", {
                     required: "Minimum rental days is required",
-                    min: { value: 1, message: "Minimum must be at least 1 day" },
+                    min: {
+                      value: 1,
+                      message: "Minimum must be at least 1 day",
+                    },
                     valueAsNumber: true,
                   })}
                 />
                 {errors.minRentalDays && (
-                  <p className="text-sm text-destructive">{errors.minRentalDays.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.minRentalDays.message}
+                  </p>
                 )}
               </div>
 
@@ -329,19 +362,27 @@ export default function AddProductPage() {
                   placeholder="30"
                   {...register("maxRentalDays", {
                     required: "Maximum rental days is required",
-                    min: { value: 1, message: "Maximum must be at least 1 day" },
+                    min: {
+                      value: 1,
+                      message: "Maximum must be at least 1 day",
+                    },
                     valueAsNumber: true,
                   })}
                 />
                 {errors.maxRentalDays && (
-                  <p className="text-sm text-destructive">{errors.maxRentalDays.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.maxRentalDays.message}
+                  </p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="deliveryMode">Delivery Mode *</Label>
-              <Select onValueChange={(value) => setValue("deliveryMode", value)} defaultValue="none">
+              <Select
+                onValueChange={(value) => setValue("deliveryMode", value)}
+                defaultValue="none"
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -393,6 +434,7 @@ export default function AddProductPage() {
               onFilesChange={setUploadedImages}
               existingFiles={uploadedImages}
               onUploadError={(error) => toast.error(error)}
+              filePath="products"
             />
           </CardContent>
         </Card>
@@ -417,7 +459,7 @@ export default function AddProductPage() {
                 Add
               </Button>
             </div>
-            
+
             {watchedTags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {watchedTags.map((tag, index) => (
@@ -444,8 +486,8 @@ export default function AddProductPage() {
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={createItemMutation.isPending}
             className="min-w-[120px]"
           >

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { useMyProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar } from "@/components/ui/calendar";
 import RangeDatePicker from "@/components/ui/range-date-picker";
 import ProximitySelector from "@/components/ui/proximity-selector";
@@ -58,7 +59,7 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
       }
     };
 
-    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
@@ -113,7 +114,9 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
           />
         </div>
         {loading && (
-          <div className="px-2 py-2 text-sm text-muted-foreground">Loading...</div>
+          <div className="px-2 py-2 text-sm text-muted-foreground">
+            Loading...
+          </div>
         )}
         {error && (
           <div className="px-2 py-2 text-sm text-destructive">{error}</div>
@@ -146,10 +149,17 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
 type DateRangeSelectorProps = {
   startDate?: string | null;
   endDate?: string | null;
-  onChange?: (value: { startDate: string | null; endDate: string | null }) => void;
+  onChange?: (value: {
+    startDate: string | null;
+    endDate: string | null;
+  }) => void;
 };
 
-function DateRangeSelector({ startDate, endDate, onChange }: DateRangeSelectorProps) {
+function DateRangeSelector({
+  startDate,
+  endDate,
+  onChange,
+}: DateRangeSelectorProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: startDate ? new Date(startDate) : undefined,
     to: endDate ? new Date(endDate) : undefined,
@@ -175,6 +185,8 @@ function DateRangeSelector({ startDate, endDate, onChange }: DateRangeSelectorPr
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { data: myProfileRes } = useMyProfile();
+  const myProfile = myProfileRes?.data;
   const [scrolled, setScrolled] = useState(false);
   const city = useAppStore((s) => s.selectedCity);
   const startDate = useAppStore((s) => s.startDate);
@@ -196,15 +208,20 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Use profile fullName if available, fallback to auth name
+  const displayName = myProfile?.fullName || user?.name || "User";
+  const avatarUrl = myProfile?.avatarUrl;
+
   const initials = useMemo(() => {
-    const name = user?.name || "";
-    return name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((s) => s[0]?.toUpperCase())
-      .join("") || "U";
-  }, [user?.name]);
+    return (
+      displayName
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((s) => s[0]?.toUpperCase())
+        .join("") || "U"
+    );
+  }, [displayName]);
 
   return (
     <header
@@ -219,7 +236,10 @@ export default function Header() {
               P2P
             </Link>
             <div className="hidden sm:flex items-center gap-2">
-              <CitySelector value={city ?? undefined} onChange={setSelectedCity} />
+              <CitySelector
+                value={city ?? undefined}
+                onChange={setSelectedCity}
+              />
             </div>
             <div className="hidden md:flex items-center gap-2">
               <DateRangeSelector
@@ -268,7 +288,9 @@ export default function Header() {
             {!isAuthenticated && (
               <div className="hidden sm:flex items-center gap-2 pl-2">
                 <Link href="/signin">
-                  <Button variant="outline" size="sm">Sign in</Button>
+                  <Button variant="outline" size="sm">
+                    Sign in
+                  </Button>
                 </Link>
                 <Link href="/signup">
                   <Button size="sm">Sign up</Button>
@@ -282,26 +304,37 @@ export default function Header() {
                 onMouseEnter={() => setUserMenuOpen(true)}
                 onMouseLeave={() => setUserMenuOpen(false)}
               >
-                <DropdownMenu open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+                <DropdownMenu
+                  open={userMenuOpen}
+                  onOpenChange={setUserMenuOpen}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="h-9 gap-2 pr-3">
                       <Avatar>
+                        <AvatarImage
+                          src={avatarUrl || undefined}
+                          alt={displayName}
+                        />
                         <AvatarFallback>{initials}</AvatarFallback>
                       </Avatar>
-                      <span className="max-w-[8rem] truncate">{user?.name || "User"}</span>
+                      <span className="max-w-[8rem] truncate">
+                        {displayName}
+                      </span>
                       <ChevronDown className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>Signed in as</DropdownMenuLabel>
                     <div className="px-2 pb-2 text-sm text-muted-foreground truncate">
-                      {user?.name}
+                      {displayName}
                     </div>
                     <DropdownMenuSeparator />
-                    <Link href={user?.id ? `/profile/${user.id}` : '/signin'}>
+                    <Link href={user?.id ? `/profile/${user.id}` : "/signin"}>
                       <DropdownMenuItem>Profile</DropdownMenuItem>
                     </Link>
-                    <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => logout()}>
+                      Logout
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -312,5 +345,3 @@ export default function Header() {
     </header>
   );
 }
-
-
