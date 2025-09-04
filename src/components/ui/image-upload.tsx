@@ -202,12 +202,28 @@ export function ImageUpload({
     multiple: maxFiles > 1,
   });
 
-  const removeFile = (fileId: string) => {
+  const removeFile = async (fileId: string) => {
     if (disabled) return;
 
-    const newFiles = files.filter((file) => file.id !== fileId);
-    setFiles(newFiles);
-    onFilesChange?.(newFiles);
+    try {
+      // Remove from backend first
+      const result = await filesAPI.deleteFile(fileId);
+      
+      if (!result.success) {
+        console.error("Failed to delete file from backend:", result.error);
+        setErrors([result.error || "Failed to delete file"]);
+        return;
+      }
+
+      // Remove from UI after successful backend deletion
+      const newFiles = files.filter((file) => file.id !== fileId);
+      setFiles(newFiles);
+      onFilesChange?.(newFiles);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete file";
+      setErrors([errorMessage]);
+    }
   };
 
   const handleButtonClick = (e: React.MouseEvent) => {
@@ -392,7 +408,7 @@ export function ImageUpload({
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          removeFile(file.id);
+                          void removeFile(file.id);
                         }}
                         disabled={disabled}
                         className="h-9 w-9 p-0"
@@ -545,7 +561,7 @@ export function ImageUpload({
               size="default"
               onClick={() => {
                 if (previewImage) {
-                  removeFile(previewImage.id);
+                  void removeFile(previewImage.id);
                   setPreviewImage(null);
                 }
               }}

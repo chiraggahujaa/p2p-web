@@ -294,9 +294,6 @@ export function ProfileTab({
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
-                        <SelectItem value="preferNotToSay">
-                          Prefer not to say
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
