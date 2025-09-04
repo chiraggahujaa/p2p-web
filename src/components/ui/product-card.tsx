@@ -4,7 +4,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Clock } from "lucide-react";
 import { cn } from "@/utils/ui";
-import Image from "next/image";
+import { ImageCarousel } from "@/components/ui/image-carousel";
 import { type Item } from "../../types/items";
 
 interface ProductCardProps {
@@ -44,29 +44,19 @@ export function ProductCard({
       )}
       onClick={onClick}
     >
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-t-xl",
-          isCompact ? "aspect-square" : "aspect-[4/3]"
-        )}
-      >
-        {item.images && item.images.length > 0 ? (
-          <Image
-            src={
-              item.images.find((img) => img.isPrimary)?.file.url ||
-              item.images[0].file.url
-            }
-            alt={item.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-300 via-slate-400 to-slate-500" />
-        )}
+      <div className="relative rounded-t-xl overflow-hidden">
+        <ImageCarousel
+          images={item.images || []}
+          alt={item.title}
+          aspectRatio={isCompact ? "square" : "4/3"}
+          className="transition-transform duration-200 group-hover:scale-105"
+          showDots={item.images && item.images.length > 1}
+          showArrows={item.images && item.images.length > 1}
+        />
 
         {/* Condition Badge */}
         {showCondition && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 z-10">
             <Badge
               variant="secondary"
               className="bg-white/95 text-slate-700 text-xs backdrop-blur-sm"
@@ -78,7 +68,7 @@ export function ProductCard({
 
         {/* Rating */}
         {showRating && item.ratingAverage > 0 && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 z-10">
             <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center">
               <Star className="w-3 h-3 text-yellow-500 fill-current" />
               <span className="text-xs font-medium ml-1">
