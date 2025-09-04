@@ -48,6 +48,7 @@ export default function HomePage() {
         itemsPerPage={itemsPerPage}
         setCurrentPage={setCurrentPage}
         setItemsPerPage={setItemsPerPage}
+        setSelectedCategory={setSelectedCategory}
         dateRange={dateRange}
       />
     </div>

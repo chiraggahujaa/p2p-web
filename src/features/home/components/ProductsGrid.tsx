@@ -14,6 +14,7 @@ type ProductsGridProps = {
   itemsPerPage: number;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (count: number) => void;
+  setSelectedCategory: (category: string) => void;
   dateRange: { from: Date; to: Date };
 };
 
@@ -23,6 +24,7 @@ export const ProductsGrid = ({
   itemsPerPage,
   setCurrentPage,
   setItemsPerPage,
+  setSelectedCategory,
   dateRange,
 }: ProductsGridProps) => {
   const { allCategories, itemsResponse, itemsLoading } = useHomeData(
@@ -110,7 +112,10 @@ export const ProductsGrid = ({
           <EmptyState
             selectedCategory={selectedCategory}
             getCategoryName={getCategoryName}
-            onResetCategory={() => setCurrentPage(1)}
+            onResetCategory={() => {
+              setSelectedCategory("");
+              setCurrentPage(1);
+            }}
           />
         )}
       </div>
