@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin, Star, Clock } from "lucide-react";
 import { cn } from "@/utils/ui";
 import { ImageCarousel } from "@/components/ui/image-carousel";
@@ -12,8 +13,6 @@ interface ProductCardProps {
   pricing: {
     totalDays: number;
     finalPrice: number;
-    discountAmount: number;
-    discountPercentage: number;
   };
   className?: string;
   variant?: "default" | "compact";
@@ -34,6 +33,12 @@ export function ProductCard({
   onClick,
 }: ProductCardProps) {
   const isCompact = variant === "compact";
+  const [titleRef, setTitleRef] = React.useState<HTMLElement | null>(null);
+  const [locationRef, setLocationRef] = React.useState<HTMLElement | null>(null);
+  
+  // Check if text is truncated
+  const isTitleTruncated = titleRef ? titleRef.scrollWidth > titleRef.clientWidth : false;
+  const isLocationTruncated = locationRef ? locationRef.scrollWidth > locationRef.clientWidth : false;
 
   return (
     <div
@@ -48,7 +53,7 @@ export function ProductCard({
         <ImageCarousel
           images={item.images || []}
           alt={item.title}
-          aspectRatio={isCompact ? "square" : "4/3"}
+          aspectRatio="square"
           className="transition-transform duration-200 group-hover:scale-105"
           showDots={item.images && item.images.length > 1}
           showArrows={item.images && item.images.length > 1}
@@ -79,15 +84,35 @@ export function ProductCard({
         )}
       </div>
 
-      <div className={cn("p-4", isCompact && "p-3")}>
-        <h4
-          className={cn(
-            "font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors",
-            isCompact ? "text-sm" : "text-base"
-          )}
-        >
-          {item.title}
-        </h4>
+      <div className={cn("p-3 pb-3", isCompact && "p-3 pb-2")}>
+        {isTitleTruncated ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h4
+                ref={setTitleRef}
+                className={cn(
+                  "font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors truncate",
+                  isCompact ? "text-sm" : "text-base"
+                )}
+              >
+                {item.title}
+              </h4>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{item.title}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <h4
+            ref={setTitleRef}
+            className={cn(
+              "font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors truncate",
+              isCompact ? "text-sm" : "text-base"
+            )}
+          >
+            {item.title}
+          </h4>
+        )}
 
         {showLocation && item.location && (
           <div
@@ -97,9 +122,24 @@ export function ProductCard({
             )}
           >
             <MapPin
-              className={cn("mr-1", isCompact ? "w-2.5 h-2.5" : "w-3 h-3")}
+              className={cn("mr-1 flex-shrink-0", isCompact ? "w-2.5 h-2.5" : "w-3 h-3")}
             />
-            {item.location.city}, {item.location.state}
+            {isLocationTruncated ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span ref={setLocationRef} className="truncate">
+                    {item.location.city}, {item.location.state}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{item.location.city}, {item.location.state}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <span ref={setLocationRef} className="truncate">
+                {item.location.city}, {item.location.state}
+              </span>
+            )}
           </div>
         )}
 
@@ -125,25 +165,7 @@ export function ProductCard({
               >
                 ₹{pricing.finalPrice.toLocaleString()}
               </div>
-              {pricing.discountAmount > 0 && (
-                <div className="text-xs text-green-600 font-medium">
-                  Save ₹{pricing.discountAmount.toLocaleString()}
-                </div>
-              )}
             </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <div className="text-xs text-slate-500">
-              ₹{item.rentPricePerDay}/day
-            </div>
-            {pricing.discountPercentage > 0 && (
-              <Badge
-                variant="outline"
-                className="text-xs text-green-600 border-green-200"
-              >
-                {pricing.discountPercentage}% off
-              </Badge>
-            )}
           </div>
         </div>
       </div>
