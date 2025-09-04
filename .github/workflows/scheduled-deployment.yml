@@ -96,6 +96,46 @@ jobs:
             fi
           fi
 
+      - name: Wait for status checks on main
+        if: steps.check.outputs.should-deploy == 'true'
+        run: |
+          echo "⏳ Waiting for status checks to pass on main branch..."
+          
+          # Wait for up to 10 minutes for status checks to complete
+          timeout=600
+          interval=30
+          elapsed=0
+          
+          while [ $elapsed -lt $timeout ]; do
+            # Get status checks for main branch
+            status_response=$(curl -s \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/${{ steps.check.outputs.main-commit }}/status")
+            
+            combined_status=$(echo "$status_response" | jq -r '.state // "pending"')
+            
+            echo "Current status: $combined_status"
+            
+            if [ "$combined_status" = "success" ]; then
+              echo "✅ All status checks passed on main branch"
+              break
+            elif [ "$combined_status" = "failure" ] || [ "$combined_status" = "error" ]; then
+              echo "❌ Status checks failed on main branch"
+              echo "Status details:"
+              echo "$status_response" | jq '.statuses[] | {context: .context, state: .state, description: .description}'
+              exit 1
+            fi
+            
+            echo "Status checks still pending, waiting ${interval}s..."
+            sleep $interval
+            elapsed=$((elapsed + interval))
+          done
+          
+          if [ $elapsed -ge $timeout ]; then
+            echo "⚠️ Timeout waiting for status checks, proceeding anyway"
+          fi
+
       - name: Merge main into production
         id: merge
         if: steps.check.outputs.should-deploy == 'true'
@@ -122,7 +162,7 @@ jobs:
           fi
           
           # Push to production branch
-          git push origin production --force
+          git push origin production
           
           echo "✅ Successfully merged main into production"
           echo "deployment-commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
