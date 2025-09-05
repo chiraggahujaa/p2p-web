@@ -11,14 +11,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { cn } from '@/utils/ui';
-import { User, MapPin, Package, ShoppingBag, BadgeCheck, Lock } from 'lucide-react';
+import { User, MapPin, Package, ShoppingBag, BadgeCheck, Lock, Shield } from 'lucide-react';
 import { ProfileTab } from '@/features/profile/components/tabs/ProfileTab';
 import { OrdersTab } from '@/features/profile/components/tabs/OrdersTab';
 import { ProductsTab } from '@/features/profile/components/tabs/ProductsTab';
 import { AddressBookTab } from '@/features/profile/components/tabs/AddressBookTab';
 import { DetailsTab } from '@/features/profile/components/tabs/DetailsTab';
+import { SecurityTab } from '@/features/profile/components/tabs/SecurityTab';
 
-type TabKey = 'profile' | 'orders' | 'products' | 'address-book' | 'details';
+type TabKey = 'profile' | 'orders' | 'products' | 'address-book' | 'details' | 'security';
 
 const privateTabs = [
   { key: 'profile' as TabKey, label: 'Profile', icon: User },
@@ -26,6 +27,7 @@ const privateTabs = [
   { key: 'products' as TabKey, label: 'Product Listing', icon: Package },
   { key: 'address-book' as TabKey, label: 'Address Book', icon: MapPin },
   { key: 'details' as TabKey, label: 'User Details', icon: User },
+  { key: 'security' as TabKey, label: 'Security', icon: Shield },
 ];
 
 const publicTabs = [
@@ -115,6 +117,8 @@ export function ProfilePage() {
         return <AddressBookTab isOwnProfile={isOwnProfile} />;
       case 'details':
         return <DetailsTab />;
+      case 'security':
+        return <SecurityTab />;
       default:
         return null;
     }

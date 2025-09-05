@@ -5,7 +5,7 @@
 # 4. ✅ Provides detailed notifications for success/failure/skip scenarios
 # 5. ✅ Supports manual triggering with force deployment option
 
-# Schedule: Daily at 9:00 PM UTC (adjust cron expression for your timezone)
+# Schedule: Daily at 9:00 PM IST (3:30 PM UTC)
 # Manual trigger: Available via GitHub Actions UI with force deployment option
 # Safety features: Prevents rollbacks, detects conflicts
 # Note: Quality checks are handled by your existing production push workflow
@@ -14,8 +14,8 @@ name: Daily Production Deploy
 
 on:
   schedule:
-    # Run every day at 9:00 PM UTC (adjust timezone as needed)
-    - cron: '0 21 * * *'
+    # Run every day at 9:00 PM IST (3:30 PM UTC)
+    - cron: '30 15 * * *'
   workflow_dispatch: # Allow manual triggering
     inputs:
       force_deploy:
@@ -282,4 +282,4 @@ jobs:
           echo "- [Main Branch](https://github.com/${{ github.repository }}/tree/main)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "*🤖 Automated daily deployment at 9:00 PM UTC*" >> $GITHUB_STEP_SUMMARY
+          echo "*🤖 Automated daily deployment at 9:00 PM IST*" >> $GITHUB_STEP_SUMMARY

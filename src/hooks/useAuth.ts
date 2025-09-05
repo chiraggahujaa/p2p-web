@@ -370,6 +370,13 @@ export const useAuth = () => {
     [updatePasswordMutation]
   );
 
+  const updatePasswordWithToken = useCallback(
+    async (password: string, token: string) => {
+      return authAPI.updatePasswordWithToken(password, token);
+    },
+    []
+  );
+
   const verifyEmail = useCallback(
     async (token: string, type: "signup" | "email" | "recovery", email?: string) => {
       verifyEmailMutation.mutate({ token, type, email });
@@ -404,6 +411,7 @@ export const useAuth = () => {
     logout,
     resetPassword,
     updatePassword,
+    updatePasswordWithToken,
     verifyEmail,
     sendPhoneOtp,
     verifyPhoneOtp,

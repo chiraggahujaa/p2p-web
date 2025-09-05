@@ -134,6 +134,24 @@ export const authAPI = {
     }
   },
 
+  // Update password with recovery token
+  updatePasswordWithToken: async (password: string, token: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const res = await api.put('/api/auth/password', 
+        { password }, 
+        { 
+          headers: { 
+            'Authorization': `Bearer ${token}` 
+          } 
+        }
+      );
+      return { success: !!res.data?.success, message: res.data?.message || 'Password updated' };
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } };
+      return { success: false, message: err?.response?.data?.error || 'Failed to update password' };
+    }
+  },
+
   // Send phone OTP
   sendPhoneOtp: async (data: PhoneLoginRequest): Promise<SendOtpResponse> => {
     const res = await api.post('/api/auth/phone/send-otp', { phone: data.phone });

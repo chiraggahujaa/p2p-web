@@ -17,3 +17,11 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export interface ApiError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+

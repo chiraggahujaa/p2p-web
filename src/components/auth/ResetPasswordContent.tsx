@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,12 +22,26 @@ export default function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const searchParams = useSearchParams();
+  const [token, setToken] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
   const router = useRouter();
-  const { updatePassword, isUpdatingPassword } = useAuth();
+  const { updatePasswordWithToken, isUpdatingPassword } = useAuth();
 
-  const token = searchParams.get('token');
-  const type = searchParams.get('type');
+  useEffect(() => {
+    // Parse hash parameters on client side
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      
+      // Check for access_token in hash or token in query params
+      const accessToken = params.get('access_token');
+      const tokenParam = new URLSearchParams(window.location.search).get('token');
+      const recoveryType = params.get('type') || new URLSearchParams(window.location.search).get('type');
+      
+      setToken(accessToken || tokenParam);
+      setType(recoveryType);
+    }
+  }, []);
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(setNewPasswordSchema),
@@ -35,13 +49,25 @@ export default function ResetPasswordContent() {
   });
 
   const onSubmit = async (data: ResetPasswordFormData) => {
+    if (!token) {
+      toast.error('No reset token found');
+      return;
+    }
+
     try {
-      await updatePassword(data.newPassword);
-      setIsSuccess(true);
-      toast.success('Password updated successfully!');
+      // Use the new updatePasswordWithToken function that passes the token in headers
+      const result = await updatePasswordWithToken(data.newPassword, token);
+      
+      if (result.success) {
+        setIsSuccess(true);
+        toast.success(result.message || 'Password updated successfully!');
+      } else {
+        toast.error(result.message || 'Failed to update password');
+      }
     } catch (err: unknown) {
       const anyErr = err as { response?: { data?: { error?: string } } };
       toast.error(anyErr?.response?.data?.error || 'Failed to update password');
+      console.error('Password reset error:', err);
     }
   };
 
