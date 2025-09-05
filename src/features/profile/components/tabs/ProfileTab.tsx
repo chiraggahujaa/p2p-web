@@ -14,8 +14,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import ProfileCompletionBar from "@/components/profile/ProfileCompletionBar";
-import { AvatarEditor } from "@/components/profile/AvatarEditor";
+import ProfileCompletionBar from "@/features/profile/components/ProfileCompletionBar";
+import { AvatarEditor } from "@/features/profile/components/AvatarEditor";
 import {
   Edit2,
   Save,

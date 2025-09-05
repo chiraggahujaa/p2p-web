@@ -348,17 +348,17 @@ export function AvatarEditor({
   if (!isEditing) {
     // View mode
     return (
-      <Card className={cn("w-full max-w-sm", className)}>
+      <Card className={cn("w-full max-w-xs sm:max-w-sm", className)}>
         <CardHeader className="text-center pb-2">
           <CardTitle className="flex items-center justify-center gap-2">
             <User className="h-4 w-4" />
             Profile Photo
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col items-center space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
             <div className="relative">
-              <Avatar className="h-32 w-32 border-4 border-muted">
+              <Avatar className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 border-4 border-muted">
                 <AvatarImage
                   src={avatarUrl || undefined}
                   alt={fullName || "User avatar"}
@@ -400,15 +400,15 @@ export function AvatarEditor({
   // Edit mode
   return (
     <>
-      <Card className={cn("w-full max-w-sm", className)}>
+      <Card className={cn("w-full max-w-xs sm:max-w-sm", className)}>
         <CardHeader className="text-center pb-2">
           <CardTitle className="flex items-center justify-center gap-2">
             <User className="h-4 w-4" />
             Profile Photo
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col items-center space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
             {/* Avatar with Drag & Drop */}
             <div className="relative">
               <div
@@ -421,7 +421,7 @@ export function AvatarEditor({
                 <input {...getInputProps()} />
                 <Avatar
                   className={cn(
-                    "h-32 w-32 border-4 transition-all duration-200",
+                    "h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 border-4 transition-all duration-200",
                     isDragActive
                       ? "border-primary border-dashed"
                       : "border-muted",

@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { AddressBook } from '@/components/profile/AddressBook';
+import { AddressBook } from '@/features/profile/components/AddressBook';
 import { Lock } from 'lucide-react';
 
 interface AddressBookTabProps {

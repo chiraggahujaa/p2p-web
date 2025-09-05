@@ -1,0 +1,42 @@
+# lefthook.yml - Local CI/CD validation
+# Mirrors GitHub Actions checks but optimized for local development
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      run: npm run lint
+      glob: "*.{ts,tsx,js,jsx}"
+    build-check:
+      run: npm run build
+      env:
+        NODE_ENV: production
+
+pre-push:
+  parallel: true
+  commands:
+    lint-full:
+      run: npm run lint
+    build-full:
+      run: npm run build
+      env:
+        NODE_ENV: production
+    test-check:
+      run: |
+        if [ -d "tests" ] || [ -f "jest.config.js" ] || [ -f "jest.config.ts" ]; then
+          npm test --passWithNoTests
+        else
+          echo "No tests configured, skipping test validation"
+        fi
+      env:
+        CI: true
+
+commit-msg:
+  commands:
+    commit-lint:
+      run: |
+        if command -v commitlint >/dev/null 2>&1; then
+          npx commitlint --edit $1
+        else
+          echo "commitlint not installed, skipping commit message validation"
+        fi

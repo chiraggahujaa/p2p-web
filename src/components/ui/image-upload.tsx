@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,10 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const [files, setFiles] = useState<UploadedFile[]>(existingFiles);
   const [, setUploading] = useState(false);
+
+  useEffect(() => {
+    setFiles(existingFiles);
+  }, [existingFiles]);
   const [uploadProgress, setUploadProgress] = useState<{
     [key: string]: number;
   }>({});

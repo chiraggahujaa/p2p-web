@@ -6,7 +6,13 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "validate": "lefthook run pre-commit",
+    "hooks:install": "lefthook install",
+    "hooks:uninstall": "lefthook uninstall",
+    "postinstall": "lefthook install"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -48,6 +54,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@evilmartians/lefthook": "^1.12.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.12",
