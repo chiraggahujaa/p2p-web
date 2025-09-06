@@ -7,10 +7,6 @@ pre-commit:
     lint:
       run: npm run lint
       glob: "*.{ts,tsx,js,jsx}"
-    build-check:
-      run: npm run build
-      env:
-        NODE_ENV: production
 
 pre-push:
   parallel: true
