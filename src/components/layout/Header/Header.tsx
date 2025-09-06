@@ -281,9 +281,11 @@ export default function Header() {
               </Link>
             )}
             {isAuthenticated && (
-              <Button variant="ghost" size="icon" aria-label="List">
-                <List className="size-5" />
-              </Button>
+              <Link href="/listings">
+                <Button variant="ghost" size="icon" aria-label="My Listings">
+                  <List className="size-5" />
+                </Button>
+              </Link>
             )}
             {!isAuthenticated && (
               <div className="hidden sm:flex items-center gap-2 pl-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,6 +19,10 @@ interface ProductViewPageProps {
 
 export function ProductViewPage({ productId }: ProductViewPageProps) {
   const router = useRouter();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const { data: productResponse, isLoading } = useQuery({
     queryKey: ["product", productId],

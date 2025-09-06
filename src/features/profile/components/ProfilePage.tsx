@@ -112,7 +112,7 @@ export function ProfilePage() {
           />
         );
       case 'products':
-        return <ProductsTab />;
+        return <ProductsTab userId={userId} isOwnProfile={isOwnProfile} />;
       case 'address-book':
         return <AddressBookTab isOwnProfile={isOwnProfile} />;
       case 'details':

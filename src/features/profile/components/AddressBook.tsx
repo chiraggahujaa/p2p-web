@@ -5,6 +5,7 @@ import { MapPin, Edit2, Trash2, Plus, Star, StarOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -31,17 +32,29 @@ export function AddressBook() {
   const [editingLocation, setEditingLocation] =
     useState<UserLocationWithDetails | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const {
     data: locationsResponse,
     isLoading,
     error,
     refetch,
-  } = useUserLocations();
+  } = useUserLocations(currentPage, itemsPerPage);
   const removeLocationMutation = useRemoveUserLocation();
   const updateLocationMutation = useUpdateUserLocation();
 
   const locations = locationsResponse?.data || [];
+  const pagination = locationsResponse?.pagination;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   const handleMakeDefault = async (userLocationId: string) => {
     updateLocationMutation.mutate({
@@ -216,6 +229,20 @@ export function AddressBook() {
               </CardContent>
             </Card>
           ))}
+
+          {/* Pagination */}
+          {pagination && pagination.total > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalItems={pagination.total}
+              itemsPerPageOptions={[5, 10, 20]}
+              defaultItemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              className="mt-6"
+              scrollTarget="top"
+            />
+          )}
         </div>
       )}
 

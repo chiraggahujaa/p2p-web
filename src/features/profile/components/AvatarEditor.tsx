@@ -348,7 +348,7 @@ export function AvatarEditor({
   if (!isEditing) {
     // View mode
     return (
-      <Card className={cn("w-full max-w-xs sm:max-w-sm", className)}>
+      <Card className={cn("w-full max-w-[280px] sm:max-w-[320px]", className)}>
         <CardHeader className="text-center pb-2">
           <CardTitle className="flex items-center justify-center gap-2">
             <User className="h-4 w-4" />
@@ -383,7 +383,7 @@ export function AvatarEditor({
                 <p className="font-medium text-lg">
                   {fullName || "Anonymous User"}
                 </p>
-                {isVerified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
+                {/* {isVerified && <BadgeCheck className="h-4 w-4 text-blue-500" />} */}
               </div>
               {isEditing ? (
                 <p className="text-sm text-muted-foreground">

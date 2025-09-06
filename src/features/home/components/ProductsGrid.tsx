@@ -56,7 +56,7 @@ export const ProductsGrid = ({
   };
 
   const handleProductClick = (productId: string) => {
-    router.push(`/products/${productId}`);
+    router.push(`/products/${productId}`, { scroll: true });
   };
 
   return (

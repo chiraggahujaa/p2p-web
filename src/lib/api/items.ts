@@ -229,4 +229,25 @@ export const itemsAPI = {
     const response = await api.delete(`/api/items/${id}`);
     return response.data;
   },
+
+  // Get items by user ID (for profile listing)
+  getByUserId: async (
+    userId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<PaginatedResponse<Item>>> => {
+    const response = await api.get(
+      `/api/items?userId=${userId}&page=${page}&limit=${limit}`
+    );
+    const apiResponse: ItemsApiResponse = response.data;
+
+    return {
+      success: apiResponse.success,
+      message: "User items retrieved successfully",
+      data: {
+        data: apiResponse.data,
+        pagination: apiResponse.pagination,
+      },
+    };
+  },
 };
