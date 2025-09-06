@@ -69,6 +69,11 @@ export default function VerifyEmailContent() {
           
           setVerificationStatus('success');
           toast.success('Email verified successfully! You are now logged in.');
+          
+          // Automatically redirect to onboarding after a brief delay
+          setTimeout(() => {
+            router.push('/onboarding');
+          }, 1500);
         } else {
           setVerificationStatus('error');
           setErrorMessage('Invalid verification type or missing tokens.');
@@ -85,7 +90,7 @@ export default function VerifyEmailContent() {
 
   const handleRedirect = () => {
     if (verificationStatus === 'success') {
-      router.push('/');
+      router.push('/onboarding');
     } else {
       router.push('/signin');
     }
@@ -130,7 +135,7 @@ export default function VerifyEmailContent() {
             </div>
           )}
           <Button onClick={handleRedirect} className="w-full">
-            {verificationStatus === 'success' ? 'Go to Home' : 'Back to Sign In'}
+            {verificationStatus === 'success' ? 'Complete Setup' : 'Back to Sign In'}
           </Button>
           {verificationStatus === 'error' && (
             <div className="text-center">

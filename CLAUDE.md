@@ -128,6 +128,10 @@ const form = useForm({
 const { register, watch, setValue, formState: { errors } } = form;
 ```
 
+**Form Field Guidelines:**
+- NEVER add "(Optional)" text to optional field labels - let the absence of `*` indicate optional fields
+- Keep form labels clean and concise without parenthetical text
+
 ### State Management
 - Use Zustand for global state (see `useAppStore.ts` pattern)
 - Include devtools and persist middleware for stores
