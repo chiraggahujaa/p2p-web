@@ -12,7 +12,7 @@ import {
   VerifyEmailRequest,
   PhoneLoginRequest,
   PhoneOtpVerificationRequest,
-} from "@/types/auth";
+} from "../types";
 
 type ApiError = Error & { response?: { data?: { error?: string } } };
 

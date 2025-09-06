@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
-import { RootAuthGuard } from "@/components/auth/RootAuthGuard";
+import { RootAuthGuard } from "@/features/auth/components/RootAuthGuard";
 import "./globals.css";
 import { Toaster } from "sonner";
 

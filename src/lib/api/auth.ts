@@ -11,7 +11,7 @@ import {
   ProfileResponse,
   SendOtpResponse,
   AuthUser,
-} from '../../types/auth';
+} from '@/features/auth/types';
 
 // Helper: normalize backend user (raw Supabase user or already-normalized) to AuthUser
 const mapToAuthUser = (input: unknown): AuthUser | null => {

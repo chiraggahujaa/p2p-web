@@ -24,7 +24,9 @@
       "Bash(npm install)",
       "Bash(ls:*)",
       "Bash(npm install:*)",
-      "Read(//Users/chiragahuja/Desktop/p2p/p2p-api/**)"
+      "Read(//Users/chiragahuja/Desktop/p2p/p2p-api/**)",
+      "Bash(find:*)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": [],
     "ask": []

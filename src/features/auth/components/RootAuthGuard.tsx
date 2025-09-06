@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { getRouteType, isProtectedRoute } from '@/lib/utils/route-utils';
 
 interface RootAuthGuardProps {

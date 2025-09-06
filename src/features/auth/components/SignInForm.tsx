@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 import type { SignInFormData, PhoneLoginFormData, OtpFormData, ForgotPasswordFormData } from '@/types/forms';
-import { loginSchema, phoneLoginSchema, otpSchema, forgotPasswordSchema } from '@/lib/validations/auth';
+import { loginSchema, phoneLoginSchema, otpSchema, forgotPasswordSchema } from '../validations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

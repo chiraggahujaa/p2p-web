@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { changePasswordSchema, resetPasswordSchema } from '../validation/security';
+import { changePasswordSchema, resetPasswordSchema } from '../validations/security';
 
 // Form data types
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

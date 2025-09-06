@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff, Lock, Shield, Mail, Key } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { toast } from 'sonner';
 import { ApiError } from '@/types/api';
-import { changePasswordSchema, resetPasswordSchema } from '../../validation/security';
+import { changePasswordSchema, resetPasswordSchema } from '../../validations/security';
 import { ChangePasswordFormData, ResetPasswordFormData } from '../../types/security';
 
 export function SecurityTab() {
