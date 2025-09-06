@@ -122,6 +122,8 @@ export const useAppStore = create<AppStore>()(
         partialize: (state) => ({
           user: state.user,
           selectedCity: state.selectedCity,
+          startDate: state.startDate,
+          endDate: state.endDate,
           proximityEnabled: state.proximityEnabled,
           proximityRadius: state.proximityRadius,
         }),

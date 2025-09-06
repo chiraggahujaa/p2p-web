@@ -7,6 +7,7 @@ import { itemsAPI } from "@/lib/api/items";
 import { type Item } from "@/types/items";
 import { useHomeData } from "../hooks/useHomeData";
 import { EmptyState } from "./EmptyState";
+import { useRouter } from "next/navigation";
 
 type ProductsGridProps = {
   selectedCategory: string;
@@ -27,6 +28,7 @@ export const ProductsGrid = ({
   setSelectedCategory,
   dateRange,
 }: ProductsGridProps) => {
+  const router = useRouter();
   const { allCategories, itemsResponse, itemsLoading } = useHomeData(
     selectedCategory,
     currentPage,
@@ -51,6 +53,10 @@ export const ProductsGrid = ({
       allCategories?.data?.find((c) => c.id === selectedCategory)?.categoryName ||
       "Items"
     );
+  };
+
+  const handleProductClick = (productId: string) => {
+    router.push(`/products/${productId}`);
   };
 
   return (
@@ -91,7 +97,14 @@ export const ProductsGrid = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-12">
               {items.map((item: Item) => {
                 const pricing = calculateItemPrice(item);
-                return <ProductCard key={item.id} item={item} pricing={pricing} />;
+                return (
+                  <ProductCard 
+                    key={item.id} 
+                    item={item} 
+                    pricing={pricing} 
+                    onClick={() => handleProductClick(item.id)}
+                  />
+                );
               })}
             </div>
 
