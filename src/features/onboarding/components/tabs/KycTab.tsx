@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, CheckCircle, Clock } from 'lucide-react';
+import { Shield, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { DigiLockerVerification } from '@/features/kyc/components/DigiLockerVerification';
 
 interface KycTabProps {
   onComplete: () => void;
@@ -12,6 +13,7 @@ interface KycTabProps {
 
 export function KycTab({ onComplete }: KycTabProps) {
   const [isSkipping, setIsSkipping] = useState(false);
+  const [showKycFlow, setShowKycFlow] = useState(false);
 
   const handleSkip = async () => {
     setIsSkipping(true);
@@ -24,9 +26,43 @@ export function KycTab({ onComplete }: KycTabProps) {
     setIsSkipping(false);
   };
 
-  const handleCompleteKyc = () => {
-    toast.info('KYC verification will be available soon!');
+  const handleKycSuccess = () => {
+    toast.success('KYC verification completed successfully!');
+    onComplete();
   };
+
+  const handleStartKyc = () => {
+    setShowKycFlow(true);
+  };
+
+  // Show KYC verification flow if started
+  if (showKycFlow) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-semibold">KYC Verification</h2>
+          <p className="text-muted-foreground mt-2">
+            Complete your identity verification to unlock additional features.
+          </p>
+        </div>
+
+        <DigiLockerVerification 
+          onSuccess={handleKycSuccess}
+          onError={(error) => toast.error(error)}
+        />
+        
+        <div className="flex justify-center">
+          <Button
+            onClick={handleSkip}
+            disabled={isSkipping}
+            variant="outline"
+          >
+            {isSkipping ? 'Completing...' : 'Skip for Now'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -48,11 +84,11 @@ export function KycTab({ onComplete }: KycTabProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center py-8">
-              <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold mb-2">KYC Verification Coming Soon</h3>
+              <Shield className="h-16 w-16 mx-auto mb-4 text-blue-500" />
+              <h3 className="text-xl font-semibold mb-2">Verify Your Identity</h3>
               <p className="text-muted-foreground mb-6">
-                We&apos;re working on bringing you a seamless identity verification experience. 
-                This feature will be available shortly.
+                Complete KYC verification using DigiLocker to build trust and 
+                unlock premium features on our platform.
               </p>
               
               <div className="space-y-3">
@@ -73,17 +109,16 @@ export function KycTab({ onComplete }: KycTabProps) {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={handleCompleteKyc}
-                disabled
+                onClick={handleStartKyc}
                 className="flex-1"
-                variant="outline"
+                variant="default"
               >
                 Start KYC Verification
               </Button>
               <Button
                 onClick={handleSkip}
                 disabled={isSkipping}
-                variant="default"
+                variant="outline"
                 className="flex-1"
               >
                 {isSkipping ? 'Completing...' : 'Skip for Now'}

@@ -20,6 +20,7 @@ Keep commit messages clean and professional without AI attribution.
 - **Icons**: Lucide React
 - **Notifications**: Sonner for toast messages
 - **Authentication**: Custom JWT-based auth with Google OAuth
+- **KYC**: DigiLocker integration for document verification
 
 ### Directory Structure
 
@@ -184,6 +185,87 @@ Available commands:
 - `npm run lint:fix` - Fix ESLint issues automatically  
 - `npm run type-check` - Run TypeScript type checking
 - `npm run validate` - Run pre-commit validation (lefthook)
+
+## KYC System (DigiLocker)
+
+### Overview
+The frontend implements DigiLocker-based KYC verification with a multi-step user experience.
+
+### KYC Components Structure
+```
+src/features/kyc/
+├── components/
+│   ├── DigiLockerVerification.tsx    # Main verification component
+│   ├── DocumentSelector.tsx          # Document selection UI
+│   ├── SessionInitiated.tsx          # Session created state
+│   ├── ProcessingStatus.tsx          # Processing and polling
+│   ├── DigiLockerSuccess.tsx         # Success state
+│   └── VerificationError.tsx         # Error handling
+├── hooks/
+│   └── useDigiLockerVerification.ts  # Main verification hook
+├── types/
+│   └── digilockerTypes.ts            # TypeScript definitions
+└── pages/
+    └── (private)/kyc/
+        ├── page.tsx                   # Main KYC page
+        └── callback/page.tsx          # DigiLocker callback handler
+```
+
+### DigiLocker Verification Flow
+1. **Document Selection**: User selects documents to verify (Aadhaar, PAN, etc.)
+2. **Session Initiation**: Creates session with backend API
+3. **DigiLocker Redirect**: Redirects user to DigiLocker for authentication
+4. **Callback Handling**: Processes DigiLocker response and authorization
+5. **Document Fetching**: Automatically retrieves documents when authorized
+6. **Success/Completion**: Shows verification results and updates user status
+
+### Key Features
+- **Session Management**: Automatic session status polling and updates
+- **Error Handling**: Comprehensive error states with retry options
+- **Responsive Design**: Works across desktop and mobile devices
+- **Real-time Updates**: Live status updates during verification process
+- **Security**: Secure handling of DigiLocker redirects and callbacks
+
+### Usage Example
+```typescript
+import { DigiLockerVerification } from '@/features/kyc/components/DigiLockerVerification';
+
+function KycPage() {
+  const handleSuccess = (data: KycData) => {
+    // Handle successful verification
+    console.log('Verification completed:', data);
+  };
+
+  const handleError = (error: string) => {
+    // Handle verification errors
+    console.error('Verification failed:', error);
+  };
+
+  return (
+    <DigiLockerVerification 
+      onSuccess={handleSuccess}
+      onError={handleError}
+    />
+  );
+}
+```
+
+### Hook Usage
+```typescript
+import { useDigiLockerVerification } from '@/features/kyc/hooks/useDigiLockerVerification';
+
+function CustomKycComponent() {
+  const {
+    currentStep,
+    initiateVerification,
+    redirectToDigiLocker,
+    isAlreadyVerified,
+    verifiedData
+  } = useDigiLockerVerification();
+
+  // Custom implementation using the hook
+}
+```
 
 ## Backend API Reference
 
