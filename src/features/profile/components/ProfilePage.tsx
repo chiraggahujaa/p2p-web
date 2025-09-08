@@ -11,20 +11,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { cn } from '@/utils/ui';
-import { User, MapPin, Package, ShoppingBag, BadgeCheck, Lock, Shield } from 'lucide-react';
+import { User, MapPin, Package, ShoppingBag, BadgeCheck, Lock, Shield, BarChart3 } from 'lucide-react';
 import { ProfileTab } from '@/features/profile/components/tabs/ProfileTab';
 import { OrdersTab } from '@/features/profile/components/tabs/OrdersTab';
 import { ProductsTab } from '@/features/profile/components/tabs/ProductsTab';
 import { AddressBookTab } from '@/features/profile/components/tabs/AddressBookTab';
 import { DetailsTab } from '@/features/profile/components/tabs/DetailsTab';
 import { SecurityTab } from '@/features/profile/components/tabs/SecurityTab';
+import { AnalyticsTab } from '@/features/profile/components/tabs/AnalyticsTab';
 
-type TabKey = 'profile' | 'orders' | 'products' | 'address-book' | 'details' | 'security';
+type TabKey = 'profile' | 'orders' | 'products' | 'analytics' | 'address-book' | 'details' | 'security';
 
 const privateTabs = [
   { key: 'profile' as TabKey, label: 'Profile', icon: User },
   { key: 'orders' as TabKey, label: 'Orders', icon: ShoppingBag },
   { key: 'products' as TabKey, label: 'Product Listing', icon: Package },
+  { key: 'analytics' as TabKey, label: 'Analytics', icon: BarChart3 },
   { key: 'address-book' as TabKey, label: 'Address Book', icon: MapPin },
   { key: 'details' as TabKey, label: 'User Details', icon: User },
   { key: 'security' as TabKey, label: 'Security', icon: Shield },
@@ -113,6 +115,8 @@ export function ProfilePage() {
         );
       case 'products':
         return <ProductsTab userId={userId} isOwnProfile={isOwnProfile} />;
+      case 'analytics':
+        return <AnalyticsTab userId={userId} isOwnProfile={isOwnProfile} />;
       case 'address-book':
         return <AddressBookTab isOwnProfile={isOwnProfile} />;
       case 'details':
