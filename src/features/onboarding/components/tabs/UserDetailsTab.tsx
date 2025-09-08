@@ -6,9 +6,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { userDetailsSchema, UserDetailsFormData } from '@/features/onboarding/validations/userDetailsSchema';
 import { useUpdateProfile } from '@/features/profile/hooks/useProfile';
@@ -27,13 +34,12 @@ export function UserDetailsTab({ onComplete }: UserDetailsTabProps) {
     defaultValues: {
       fullName: '',
       phoneNumber: '',
-      gender: '',
+      gender: undefined,
       dob: '',
       bio: '',
     },
+    mode: 'onChange',
   });
-
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
 
   const onSubmit = async (data: UserDetailsFormData) => {
     setIsSubmitting(true);
@@ -63,86 +69,106 @@ export function UserDetailsTab({ onComplete }: UserDetailsTabProps) {
           <CardTitle>Personal Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
-                <Input
-                  id="fullName"
-                  {...register('fullName')}
-                  placeholder="Enter your full name"
-                />
-                {errors.fullName && (
-                  <p className="text-sm text-red-600">{errors.fullName.message}</p>
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name*</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number *</Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  {...register('phoneNumber')}
-                  placeholder="Enter your phone number"
-                />
-                {errors.phoneNumber && (
-                  <p className="text-sm text-red-600">{errors.phoneNumber.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender *</Label>
-                <Select onValueChange={(value) => setValue('gender', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="non-binary">Non-binary</SelectItem>
-                    <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.gender && (
-                  <p className="text-sm text-red-600">{errors.gender.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dob">Date of Birth *</Label>
-                <Input
-                  id="dob"
-                  type="date"
-                  {...register('dob')}
-                />
-                {errors.dob && (
-                  <p className="text-sm text-red-600">{errors.dob.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                {...register('bio')}
-                placeholder="Tell others a bit about yourself..."
-                rows={4}
               />
-              <p className="text-xs text-muted-foreground">
-                {watch('bio')?.length || 0}/500 characters
-              </p>
-              {errors.bio && (
-                <p className="text-sm text-red-600">{errors.bio.message}</p>
-              )}
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number*</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender*</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dob"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Birth*</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Tell others a bit about yourself..."
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    {field.value?.length || 0}/500 characters
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !form.formState.isValid}
             >
               {isSubmitting ? (
                 <>
@@ -153,7 +179,8 @@ export function UserDetailsTab({ onComplete }: UserDetailsTabProps) {
                 'Continue to KYC'
               )}
             </Button>
-          </form>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

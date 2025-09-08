@@ -30,6 +30,7 @@ const parseUrlFragment = () => {
 export default function VerifyEmailContent() {
   const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [countdown, setCountdown] = useState(0);
   const router = useRouter();
   const { setUser } = useAppStore();
   const { setTokens } = useAppStore();
@@ -46,34 +47,49 @@ export default function VerifyEmailContent() {
         }
 
         if (fragmentParams.type === 'signup' && fragmentParams.access_token && fragmentParams.refresh_token) {
-          setTokens(fragmentParams.access_token, fragmentParams.refresh_token);
-          
-          try {
-            const profile = await authAPI.getProfile();
-            if (profile?.success && profile?.data?.user) {
-              const user = profile.data.user;
-              setUser({
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                emailConfirmedAt: user.emailConfirmedAt,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt,
-              });
-            }
-          } catch (profileError) {
-            console.warn('Could not fetch profile after verification:', profileError);
-          }
-          
-          window.history.replaceState(null, '', window.location.pathname);
-          
+          // Show success message first, then set auth state to prevent RootAuthGuard redirect
           setVerificationStatus('success');
           toast.success('Email verified successfully! You are now logged in.');
           
-          // Automatically redirect to onboarding after a brief delay
-          setTimeout(() => {
-            router.push('/onboarding');
-          }, 1500);
+          // Start countdown
+          setCountdown(5);
+          
+          // Countdown timer
+          const countdownInterval = setInterval(() => {
+            setCountdown(prev => {
+              if (prev <= 1) {
+                clearInterval(countdownInterval);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          
+          // Set authentication state and redirect after delay
+          setTimeout(async () => {
+            clearInterval(countdownInterval);
+            try {
+              setTokens(fragmentParams.access_token || '', fragmentParams.refresh_token || '');
+              
+              const profile = await authAPI.getProfile();
+              if (profile?.success && profile?.data?.user) {
+                const user = profile.data.user;
+                setUser({
+                  id: user.id,
+                  email: user.email,
+                  name: user.name,
+                  emailConfirmedAt: user.emailConfirmedAt,
+                  createdAt: user.createdAt,
+                  updatedAt: user.updatedAt,
+                });
+              }
+              
+              router.push('/onboarding');
+            } catch (error) {
+              console.error('Error setting up authentication:', error);
+              router.push('/onboarding');
+            }
+          }, 5000);
         } else {
           setVerificationStatus('error');
           setErrorMessage('Invalid verification type or missing tokens.');
@@ -86,7 +102,7 @@ export default function VerifyEmailContent() {
     };
 
     handleEmailVerification();
-  }, [setTokens, setUser]);
+  }, [router, setTokens, setUser]);
 
   const handleRedirect = () => {
     if (verificationStatus === 'success') {
@@ -123,12 +139,32 @@ export default function VerifyEmailContent() {
           </CardTitle>
           <CardDescription>
             {verificationStatus === 'success' 
-              ? 'Your email has been successfully verified. You can now access your account.'
+              ? countdown > 0 
+                ? `Your email has been successfully verified. You can now access your account.`
+                : 'Your email has been successfully verified. You can now access your account.'
               : 'We encountered an issue verifying your email.'
             }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {verificationStatus === 'success' && countdown > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-center space-x-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-blue-700 font-medium">
+                    Redirecting to onboarding in {countdown} second{countdown !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-2 w-full bg-blue-100 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                  style={{ width: `${((5 - countdown) / 5) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
           {verificationStatus === 'error' && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-600">{errorMessage}</p>

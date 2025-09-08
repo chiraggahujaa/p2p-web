@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -35,6 +45,10 @@ import {
   UpdateMeProfilePayload,
 } from "@/types/user";
 import { UseMutationResult } from "@tanstack/react-query";
+import { 
+  profileEditSchema, 
+  ProfileEditFormData 
+} from "@/features/profile/validations/profileEdit";
 
 interface ProfileTabProps {
   profileData: PublicUserProfile | MeProfile | undefined;
@@ -48,16 +62,6 @@ interface ProfileTabProps {
   >;
 }
 
-interface EditForm {
-  fullName: string;
-  phoneNumber: string;
-  gender: string;
-  dob: string;
-  dobVisibility: "private" | "friends" | "public";
-  bio: string;
-  avatarUrl: string;
-}
-
 export function ProfileTab({
   profileData,
   isOwnProfile,
@@ -65,14 +69,19 @@ export function ProfileTab({
   updateProfileMutation,
 }: ProfileTabProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<EditForm>({
-    fullName: "",
-    phoneNumber: "",
-    gender: "",
-    dob: "",
-    dobVisibility: "private",
-    bio: "",
-    avatarUrl: "",
+
+  const form = useForm<ProfileEditFormData>({
+    resolver: zodResolver(profileEditSchema),
+    defaultValues: {
+      fullName: "",
+      phoneNumber: "",
+      gender: undefined,
+      dob: "",
+      dobVisibility: undefined,
+      bio: "",
+      avatarUrl: "",
+    },
+    mode: "onChange",
   });
 
   // Type guard function
@@ -86,10 +95,10 @@ export function ProfileTab({
     // Only allow editing for own profile
     if (!isOwnProfile || !isMyProfile(profileData)) return;
 
-    setEditForm({
+    form.reset({
       fullName: profileData.fullName || "",
       phoneNumber: profileData.phoneNumber || "",
-      gender: profileData.gender || "",
+      gender: profileData.gender as "male" | "female" | "other" | "prefer_not_to_say" | undefined,
       dob: profileData.dob || "",
       dobVisibility:
         (profileData.dobVisibility as "private" | "friends" | "public") ||
@@ -102,31 +111,27 @@ export function ProfileTab({
 
   const handleEditCancel = () => {
     setIsEditing(false);
-    setEditForm({
+    form.reset({
       fullName: "",
       phoneNumber: "",
-      gender: "",
+      gender: undefined,
       dob: "",
-      dobVisibility: "private",
+      dobVisibility: undefined,
       bio: "",
       avatarUrl: "",
     });
   };
 
-  const handleEditSave = async () => {
-    if (!editForm.fullName.trim()) {
-      return;
-    }
-
+  const handleEditSave: SubmitHandler<ProfileEditFormData> = async (data) => {
     updateProfileMutation.mutate(
       {
-        fullName: editForm.fullName,
-        phoneNumber: editForm.phoneNumber || undefined,
-        gender: editForm.gender || undefined,
-        dob: editForm.dob || undefined,
-        dobVisibility: editForm.dobVisibility,
-        bio: editForm.bio || undefined,
-        avatarUrl: editForm.avatarUrl || undefined,
+        fullName: data.fullName,
+        phoneNumber: data.phoneNumber || undefined,
+        gender: data.gender || undefined,
+        dob: data.dob || undefined,
+        dobVisibility: data.dobVisibility,
+        bio: data.bio || undefined,
+        avatarUrl: data.avatarUrl || undefined,
       },
       {
         onSuccess: () => {
@@ -155,9 +160,9 @@ export function ProfileTab({
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleEditSave}
+                  onClick={form.handleSubmit(handleEditSave)}
                   disabled={
-                    updateProfileMutation.isPending || !editForm.fullName.trim()
+                    updateProfileMutation.isPending || !form.formState.isValid
                   }
                 >
                   {updateProfileMutation.isPending ? (
@@ -191,15 +196,15 @@ export function ProfileTab({
         {/* Avatar Editor */}
         <AvatarEditor
           currentAvatarUrl={
-            isEditing ? editForm.avatarUrl : profileData?.avatarUrl || undefined
+            isEditing ? form.watch("avatarUrl") : profileData?.avatarUrl || undefined
           }
           fullName={
-            isEditing ? editForm.fullName : profileData?.fullName || undefined
+            isEditing ? form.watch("fullName") : profileData?.fullName || undefined
           }
           isVerified={profileData?.isVerified || undefined}
           isEditing={isOwnProfile && isEditing}
           onAvatarChange={(avatarUrl) =>
-            setEditForm((prev) => ({ ...prev, avatarUrl: avatarUrl || "" }))
+            form.setValue("avatarUrl", avatarUrl || "")
           }
           disabled={!isOwnProfile || updateProfileMutation.isPending}
           className="flex-shrink-0"
@@ -212,29 +217,41 @@ export function ProfileTab({
             <CardTitle>Public Info</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            <Form {...form}>
             {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Full Name */}
               <div>
-                <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  Full Name
-                </div>
                 {isEditing ? (
-                  <Input
-                    value={editForm.fullName}
-                    onChange={(e) =>
-                      setEditForm((prev) => ({
-                        ...prev,
-                        fullName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter your full name"
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-muted-foreground flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          Full Name*
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your full name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 ) : (
-                  <div className="font-medium">
-                    {profileData?.fullName || "—"}
-                  </div>
+                  <>
+                    <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      Full Name
+                    </div>
+                    <div className="font-medium">
+                      {profileData?.fullName || "—"}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -252,25 +269,36 @@ export function ProfileTab({
               {/* Phone Number - Only for own profile */}
               {isOwnProfile && isMyProfile(profileData) && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                    <Phone className="h-3 w-3" />
-                    Phone Number
-                  </div>
                   {isEditing ? (
-                    <Input
-                      value={editForm.phoneNumber}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          phoneNumber: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter your phone number"
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            Phone Number
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter your phone number"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   ) : (
-                    <div className="font-medium">
-                      {profileData.phoneNumber || "—"}
-                    </div>
+                    <>
+                      <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        Phone Number
+                      </div>
+                      <div className="font-medium">
+                        {profileData.phoneNumber || "—"}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -278,34 +306,46 @@ export function ProfileTab({
               {/* Gender - Only for own profile */}
               {isOwnProfile && isMyProfile(profileData) && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Gender
-                  </div>
                   {isEditing ? (
-                    <Select
-                      value={editForm.gender}
-                      onValueChange={(value) =>
-                        setEditForm((prev) => ({ ...prev, gender: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormField
+                      control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm text-muted-foreground">
+                            Gender
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select gender" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="male">Male</SelectItem>
+                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                              <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   ) : (
-                    <div className="font-medium">
-                      {profileData.gender === "preferNotToSay"
-                        ? "Prefer not to say"
-                        : profileData.gender
-                        ? profileData.gender.charAt(0).toUpperCase() +
-                          profileData.gender.slice(1)
-                        : "—"}
-                    </div>
+                    <>
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Gender
+                      </div>
+                      <div className="font-medium">
+                        {profileData.gender === "prefer_not_to_say"
+                          ? "Prefer not to say"
+                          : profileData.gender
+                          ? profileData.gender.charAt(0).toUpperCase() +
+                            profileData.gender.slice(1)
+                          : "—"}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -313,27 +353,38 @@ export function ProfileTab({
               {/* Date of Birth - Only for own profile */}
               {isOwnProfile && isMyProfile(profileData) && (
                 <div>
-                  <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    Date of Birth
-                  </div>
                   {isEditing ? (
-                    <Input
-                      type="date"
-                      value={editForm.dob}
-                      onChange={(e) =>
-                        setEditForm((prev) => ({
-                          ...prev,
-                          dob: e.target.value,
-                        }))
-                      }
+                    <FormField
+                      control={form.control}
+                      name="dob"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            Date of Birth
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   ) : (
-                    <div className="font-medium">
-                      {profileData.dob
-                        ? new Date(profileData.dob).toLocaleDateString()
-                        : "—"}
-                    </div>
+                    <>
+                      <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        Date of Birth
+                      </div>
+                      <div className="font-medium">
+                        {profileData.dob
+                          ? new Date(profileData.dob).toLocaleDateString()
+                          : "—"}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -343,39 +394,50 @@ export function ProfileTab({
                 isMyProfile(profileData) &&
                 (isEditing || profileData.dob) && (
                   <div>
-                    <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                      {profileData.dobVisibility === "public" ? (
-                        <Eye className="h-3 w-3" />
-                      ) : (
-                        <EyeOff className="h-3 w-3" />
-                      )}
-                      DOB Visibility
-                    </div>
                     {isEditing ? (
-                      <Select
-                        value={editForm.dobVisibility}
-                        onValueChange={(
-                          value: "private" | "friends" | "public"
-                        ) =>
-                          setEditForm((prev) => ({
-                            ...prev,
-                            dobVisibility: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="private">Private</SelectItem>
-                          <SelectItem value="friends">Friends only</SelectItem>
-                          <SelectItem value="public">Public</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormField
+                        control={form.control}
+                        name="dobVisibility"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground flex items-center gap-1">
+                              {field.value === "public" ? (
+                                <Eye className="h-3 w-3" />
+                              ) : (
+                                <EyeOff className="h-3 w-3" />
+                              )}
+                              DOB Visibility
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="private">Private</SelectItem>
+                                <SelectItem value="friends">Friends only</SelectItem>
+                                <SelectItem value="public">Public</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     ) : (
-                      <div className="font-medium capitalize">
-                        {profileData.dobVisibility || "Private"}
-                      </div>
+                      <>
+                        <div className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                          {profileData.dobVisibility === "public" ? (
+                            <Eye className="h-3 w-3" />
+                          ) : (
+                            <EyeOff className="h-3 w-3" />
+                          )}
+                          DOB Visibility
+                        </div>
+                        <div className="font-medium capitalize">
+                          {profileData.dobVisibility || "Private"}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -446,23 +508,35 @@ export function ProfileTab({
 
             {/* Bio */}
             <div>
-              <div className="text-sm text-muted-foreground mb-2">Bio</div>
               {isEditing ? (
-                <Textarea
-                  value={editForm.bio}
-                  onChange={(e) =>
-                    setEditForm((prev) => ({ ...prev, bio: e.target.value }))
-                  }
-                  placeholder="Tell others about yourself..."
-                  className="max-w-2xl"
-                  rows={3}
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm text-muted-foreground">Bio</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Tell others about yourself..."
+                          className="max-w-2xl"
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               ) : (
-                <div className="font-medium whitespace-pre-wrap">
-                  {profileData?.bio || "—"}
-                </div>
+                <>
+                  <div className="text-sm text-muted-foreground mb-2">Bio</div>
+                  <div className="font-medium whitespace-pre-wrap">
+                    {profileData?.bio || "—"}
+                  </div>
+                </>
               )}
             </div>
+            </Form>
           </CardContent>
         </Card>
       </div>

@@ -127,7 +127,7 @@ export function UserProductsList({ userId, isOwnProfile }: UserProductsListProps
         </p>
         {isOwnProfile && (
           <Button
-            onClick={() => router.push("/products/create")}
+            onClick={() => router.push("/products/add")}
             className="mt-4"
           >
             List Your First Item

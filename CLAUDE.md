@@ -162,7 +162,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 // API and utilities
 import { apiFunction } from "@/lib/api/feature";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/ui";
 
 // Types and local imports
 import { ComponentProps } from "../types/formTypes";
