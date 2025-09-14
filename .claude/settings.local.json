@@ -8,7 +8,7 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "WebSearch",
-      "WebFetch(domain:github.com)",
+      "WebFetch(*)",
       "Bash(mv:*)",
       "Bash(git commit:*)",
       "Bash(npx tsc:*)",
@@ -26,7 +26,9 @@
       "Bash(npm install:*)",
       "Read(//Users/chiragahuja/Desktop/p2p/p2p-api/**)",
       "Bash(find:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []
