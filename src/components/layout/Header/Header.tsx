@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useMyProfile } from "@/features/profile/hooks/useProfile";
+import { useBrowserLocation } from "@/hooks/useBrowserLocation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,6 +44,7 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const autoSelectedRef = useRef(false);
+  const { latitude, longitude, hasLocation } = useBrowserLocation();
 
   useEffect(() => {
     let cancelled = false;
@@ -59,24 +61,16 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
       }
     };
 
-    if (typeof window !== "undefined" && "geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          fetchCities({ lat: latitude, lon: longitude });
-        },
-        () => {
-          fetchCities();
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 300000 }
-      );
+    if (hasLocation && latitude && longitude) {
+      fetchCities({ lat: latitude, lon: longitude });
     } else {
       fetchCities();
     }
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hasLocation, latitude, longitude]);
 
   useEffect(() => {
     if (!autoSelectedRef.current && !value && cities.length > 0) {
@@ -167,9 +161,26 @@ function DateRangeSelector({
 
   useEffect(() => {
     if (dateRange?.from || dateRange?.to) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let adjustedStartDate = dateRange.from;
+      let adjustedEndDate = dateRange.to;
+
+      // If start date is less than today, set it to today
+      if (adjustedStartDate && adjustedStartDate < today) {
+        adjustedStartDate = new Date(today);
+      }
+
+      // If end date is less than or equal to today, set it to today + 1
+      if (adjustedEndDate && adjustedEndDate <= today) {
+        adjustedEndDate = new Date(today);
+        adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+      }
+
       onChange?.({
-        startDate: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : null,
-        endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : null,
+        startDate: adjustedStartDate ? format(adjustedStartDate, "yyyy-MM-dd") : null,
+        endDate: adjustedEndDate ? format(adjustedEndDate, "yyyy-MM-dd") : null,
       });
     }
   }, [dateRange, onChange]);
