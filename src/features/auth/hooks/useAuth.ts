@@ -266,17 +266,18 @@ export const useAuth = () => {
     },
   });
 
-  const googleSignInMutation = useMutation({
-    mutationFn: (tokens: { accessToken: string; idToken: string }) => authAPI.googleSignIn(tokens),
+  // Unified Google Authentication mutation
+  const googleAuthMutation = useMutation({
+    mutationFn: (tokens: { accessToken: string; idToken: string }) => authAPI.googleAuth(tokens),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
         const sessionData = session as { access_token?: string; refresh_token?: string } | null;
-        
+
         if (sessionData?.access_token && sessionData?.refresh_token) {
           setTokens(sessionData.access_token, sessionData.refresh_token);
         }
-        
+
         if (user) {
           setUser({
             id: user.id,
@@ -287,48 +288,18 @@ export const useAuth = () => {
             updatedAt: user.updatedAt,
           });
         }
-        
+
         queryClient.invalidateQueries({ queryKey: ["profile"] });
-        toast.success(response.message || 'Signed in with Google');
+        toast.success(response.message || 'Authenticated with Google');
       }
     },
     onError: (error: ApiError) => {
-      const errorMessage = error?.response?.data?.error || 'Google sign-in failed';
+      const errorMessage = error?.response?.data?.error || 'Google authentication failed';
       toast.error(errorMessage);
     },
   });
 
-  const googleSignUpMutation = useMutation({
-    mutationFn: (tokens: { accessToken: string; idToken: string }) => authAPI.googleSignUp(tokens),
-    onSuccess: (response) => {
-      if (response.success && response.data) {
-        const { user, session } = response.data;
-        const sessionData = session as { access_token?: string; refresh_token?: string } | null;
-        
-        if (sessionData?.access_token && sessionData?.refresh_token) {
-          setTokens(sessionData.access_token, sessionData.refresh_token);
-        }
-        
-        if (user) {
-          setUser({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            emailConfirmedAt: user.emailConfirmedAt,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-          });
-        }
-        
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        toast.success(response.message || 'Signed up with Google');
-      }
-    },
-    onError: (error: ApiError) => {
-      const errorMessage = error?.response?.data?.error || 'Google sign-up failed';
-      toast.error(errorMessage);
-    },
-  });
+
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -415,8 +386,7 @@ export const useAuth = () => {
     verifyEmail,
     sendPhoneOtp,
     verifyPhoneOtp,
-    googleSignIn: (tokens: { accessToken: string; idToken: string }) => googleSignInMutation.mutate(tokens),
-    googleSignUp: (tokens: { accessToken: string; idToken: string }) => googleSignUpMutation.mutate(tokens),
+    googleAuth: (tokens: { accessToken: string; idToken: string }) => googleAuthMutation.mutate(tokens),
     clearError,
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
@@ -426,7 +396,6 @@ export const useAuth = () => {
     isVerifyingEmail: verifyEmailMutation.isPending,
     isSendingOtp: sendPhoneOtpMutation.isPending,
     isVerifyingOtp: verifyPhoneOtpMutation.isPending,
-    isGoogleSigningIn: googleSignInMutation.isPending,
-    isGoogleSigningUp: googleSignUpMutation.isPending,
+    isGoogleAuthenticating: googleAuthMutation.isPending,
   };
 };

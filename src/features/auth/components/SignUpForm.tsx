@@ -49,9 +49,9 @@ export function SignUpForm() {
     }
   };
 
-  const { googleSignUp } = useAuth();
+  const { googleAuth } = useAuth();
   const handleGoogleCredential = (credential: string) => {
-    googleSignUp({ accessToken: '', idToken: credential });
+    googleAuth({ accessToken: '', idToken: credential });
   };
 
   return (

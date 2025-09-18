@@ -101,9 +101,9 @@ export function SignInForm() {
     }
   };
 
-  const { googleSignIn } = useAuth();
+  const { googleAuth } = useAuth();
   const handleGoogleCredential = (credential: string) => {
-    googleSignIn({ accessToken: '', idToken: credential });
+    googleAuth({ accessToken: '', idToken: credential });
   };
 
   return (

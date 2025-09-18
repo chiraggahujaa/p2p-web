@@ -172,29 +172,18 @@ export const authAPI = {
     return { success: !!backend?.success, data: { user, session }, message: backend?.message || 'Phone verified and signed in' };
   },
 
-  // Google Sign-In
-  googleSignIn: async (tokens: { accessToken: string; idToken: string }): Promise<AuthResponse> => {
-    const res = await api.post('/api/auth/google/signin', {
+  // Unified Google Authentication (handles both sign-in and sign-up)
+  googleAuth: async (tokens: { accessToken: string; idToken: string }): Promise<AuthResponse> => {
+    const res = await api.post('/api/auth/google/auth', {
       accessToken: tokens.accessToken,
       idToken: tokens.idToken,
     });
     const backend = res.data;
     const user = mapToAuthUser(backend?.data?.user);
     const session = (backend?.data?.session || null) as Record<string, unknown> | null;
-    return { success: !!backend?.success, data: { user, session }, message: backend?.message || 'Google sign-in successful' };
+    return { success: !!backend?.success, data: { user, session }, message: backend?.message || 'Google authentication successful' };
   },
 
-  // Google Sign-Up
-  googleSignUp: async (tokens: { accessToken: string; idToken: string }): Promise<AuthResponse> => {
-    const res = await api.post('/api/auth/google/signup', {
-      accessToken: tokens.accessToken,
-      idToken: tokens.idToken,
-    });
-    const backend = res.data;
-    const user = mapToAuthUser(backend?.data?.user);
-    const session = (backend?.data?.session || null) as Record<string, unknown> | null;
-    return { success: !!backend?.success, data: { user, session }, message: backend?.message || 'Google sign-up successful' };
-  },
 
   resendVerificationEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
     try {

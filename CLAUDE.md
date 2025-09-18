@@ -179,9 +179,10 @@ import { ComponentProps } from "../types/formTypes";
 
 Available commands:
 - `npm run dev` - Start development server with Turbopack
+- `npm run dev:prod` - Start development server with production environment
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues automatically  
+- `npm run lint:fix` - Fix ESLint issues automatically
 - `npm run type-check` - Run TypeScript type checking
 - `npm run validate` - Run pre-commit validation (lefthook)
 
