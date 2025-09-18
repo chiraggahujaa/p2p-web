@@ -24,6 +24,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { DatePicker } from "@/components/forms/DatePicker";
 import ProfileCompletionBar from "@/features/profile/components/ProfileCompletionBar";
 import { AvatarEditor } from "@/features/profile/components/AvatarEditor";
 import {
@@ -364,9 +365,21 @@ export function ProfileTab({
                             Date of Birth
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              type="date"
-                              {...field}
+                            <DatePicker
+                              value={field.value}
+                              onChange={(date) => {
+                                // Convert Date to string format (YYYY-MM-DD) for form validation
+                                if (date) {
+                                  const year = date.getFullYear()
+                                  const month = String(date.getMonth() + 1).padStart(2, '0')
+                                  const day = String(date.getDate()).padStart(2, '0')
+                                  const dateString = `${year}-${month}-${day}`
+                                  field.onChange(dateString);
+                                } else {
+                                  field.onChange('');
+                                }
+                              }}
+                              placeholder="Select your date of birth"
                             />
                           </FormControl>
                           <FormMessage />
