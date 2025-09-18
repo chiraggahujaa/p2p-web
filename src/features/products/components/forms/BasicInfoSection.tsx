@@ -21,6 +21,7 @@ import {
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { categoriesAPI } from "@/lib/api/categories";
 import { BasicInfoSectionProps } from "../../types/formTypes";
+import { CONDITION_OPTIONS } from "@/lib/constants/conditions";
 
 export function BasicInfoSection({
   register,
@@ -122,11 +123,11 @@ export function BasicInfoSection({
               <SelectValue placeholder="Select condition" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="likeNew">Like New</SelectItem>
-              <SelectItem value="good">Good</SelectItem>
-              <SelectItem value="fair">Fair</SelectItem>
-              <SelectItem value="poor">Poor</SelectItem>
+              {CONDITION_OPTIONS.map((condition) => (
+                <SelectItem key={condition.value} value={condition.formValue}>
+                  {condition.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           {errors.condition && (

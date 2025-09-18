@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Pagination } from "@/components/ui/pagination";
+import { ItemConditionTag } from "@/components/ui/item-condition-tag";
 import {
   MoreVertical,
   Eye,
@@ -80,9 +81,6 @@ export function UserProductsList({ userId, isOwnProfile }: UserProductsListProps
     setCurrentPage(1); // Reset to first page when changing items per page
   };
 
-  const formatCondition = (condition: string) => {
-    return condition.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -214,9 +212,7 @@ export function UserProductsList({ userId, isOwnProfile }: UserProductsListProps
                   >
                     {item.status.replace('_', ' ')}
                   </Badge>
-                  <Badge variant="secondary">
-                    {formatCondition(item.condition)}
-                  </Badge>
+                  <ItemConditionTag condition={item.condition} />
                   {item.category && (
                     <Badge variant="outline">
                       {item.category.categoryName}

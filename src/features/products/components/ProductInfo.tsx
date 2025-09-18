@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Star, Clock, Truck, Tag, Calendar } from "lucide-react";
 import { type Item } from "@/types/items";
-import { cn } from "@/utils/ui";
+import { ItemConditionTag } from "@/components/ui/item-condition-tag";
 
 interface ProductInfoProps {
   product: Item;
@@ -28,16 +28,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
     }
   };
 
-  const getConditionColor = (condition: string) => {
-    switch (condition) {
-      case 'new': return 'bg-green-100 text-green-800 border-green-200';
-      case 'like_new': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'good': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'fair': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'poor': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-slate-100 text-slate-800 border-slate-200';
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -73,9 +63,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
         {/* Key Attributes */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <Badge variant="outline" className={cn("border", getConditionColor(product.condition))}>
-            {product.condition.replace('_', ' ')}
-          </Badge>
+          <ItemConditionTag condition={product.condition} />
           
           {product.isNegotiable && (
             <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-700">
