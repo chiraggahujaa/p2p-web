@@ -138,10 +138,9 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
                   onChange?.(city);
                   setOpen(false);
                 }}
-                onFocus={(e) => {
-                  // Prevent auto-focusing on dropdown items
+                onMouseDown={(e) => {
+                  // Prevent the input from losing focus when clicking on items
                   e.preventDefault();
-                  inputRef.current?.focus();
                 }}
               >
                 {city}
