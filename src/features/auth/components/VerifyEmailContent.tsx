@@ -82,11 +82,27 @@ export default function VerifyEmailContent() {
                   createdAt: user.createdAt,
                   updatedAt: user.updatedAt,
                 });
+
+                // Check if user needs onboarding based on profile completeness
+                const userProfile = profile.data.profile;
+                const needsOnboarding = !userProfile ||
+                  !userProfile.fullName ||
+                  !userProfile.phoneNumber ||
+                  !userProfile.gender ||
+                  !userProfile.dob;
+
+                if (needsOnboarding) {
+                  router.push('/onboarding');
+                } else {
+                  router.push('/');
+                }
+              } else {
+                // If we can't get profile, assume they need onboarding
+                router.push('/onboarding');
               }
-              
-              router.push('/onboarding');
             } catch (error) {
               console.error('Error setting up authentication:', error);
+              // On error, assume they need onboarding
               router.push('/onboarding');
             }
           }, 5000);
@@ -106,6 +122,7 @@ export default function VerifyEmailContent() {
 
   const handleRedirect = () => {
     if (verificationStatus === 'success') {
+      // For manual redirect, always go to onboarding to ensure user completes profile
       router.push('/onboarding');
     } else {
       router.push('/signin');

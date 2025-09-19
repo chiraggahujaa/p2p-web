@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin, Star, Clock } from "lucide-react";
 import { cn } from "@/utils/ui";
 import { ImageCarousel } from "@/components/ui/image-carousel";
+import { ItemConditionTag } from "@/components/ui/item-condition-tag";
 import { type Item } from "../../types/items";
 
 interface ProductCardProps {
@@ -62,12 +62,10 @@ export function ProductCard({
         {/* Condition Badge */}
         {showCondition && (
           <div className="absolute top-3 left-3 z-10">
-            <Badge
-              variant="secondary"
-              className="bg-white/95 text-slate-700 text-xs backdrop-blur-sm"
-            >
-              {item.condition.replace("_", " ")}
-            </Badge>
+            <ItemConditionTag
+              condition={item.condition}
+              className="bg-white/95 text-xs backdrop-blur-sm"
+            />
           </div>
         )}
 

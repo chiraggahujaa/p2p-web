@@ -16,9 +16,8 @@ export function getRouteType(pathname: string): RouteType {
   // Auth routes (from (auth) folder group)
   const authRoutes = [
     '/signin',
-    '/signup', 
-    '/reset-password',
-    '/verify-email'
+    '/signup',
+    '/reset-password'
   ];
   
   if (authRoutes.some(route => normalizedPath === route || normalizedPath.startsWith(route + '/'))) {

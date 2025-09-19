@@ -33,6 +33,10 @@ export function RootAuthGuard({ children }: RootAuthGuardProps) {
     }
 
     if (isAuthenticated && routeType === 'auth') {
+      // Allow verification page to complete its flow
+      if (pathname === '/verify-email') {
+        return;
+      }
       hasRedirected.current = true;
       router.replace('/');
       return;
