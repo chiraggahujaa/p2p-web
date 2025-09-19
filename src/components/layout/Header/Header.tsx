@@ -44,6 +44,7 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const autoSelectedRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { latitude, longitude, hasLocation } = useBrowserLocation();
 
   useEffect(() => {
@@ -102,9 +103,17 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
         </DropdownMenuLabel>
         <div className="px-2 pb-2">
           <Input
+            ref={inputRef}
             placeholder="Search city..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              // Prevent losing focus when arrow keys are pressed
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+              }
+            }}
+            autoFocus
           />
         </div>
         {loading && (
@@ -125,9 +134,14 @@ function CitySelector({ value, onChange }: CitySelectorProps) {
             {filtered.map((city) => (
               <DropdownMenuItem
                 key={city}
-                onClick={() => {
+                onSelect={() => {
                   onChange?.(city);
                   setOpen(false);
+                }}
+                onFocus={(e) => {
+                  // Prevent auto-focusing on dropdown items
+                  e.preventDefault();
+                  inputRef.current?.focus();
                 }}
               >
                 {city}
