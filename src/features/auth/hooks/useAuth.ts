@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from "@/stores/useAppStore";
 import { authAPI } from "@/lib/api/auth";
+import { usersAPI } from "@/lib/api/users";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -15,6 +16,21 @@ import {
 } from "../types";
 
 type ApiError = Error & { response?: { data?: { error?: string } } };
+
+// Helper function to check if user needs onboarding
+const needsOnboarding = async (): Promise<boolean> => {
+  try {
+    const profile = await usersAPI.getMeProfile();
+    if (profile.success && profile.data) {
+      const { fullName, phoneNumber, gender, dob } = profile.data;
+      // User needs onboarding if they're missing essential profile information
+      return !fullName || !phoneNumber || !gender || !dob;
+    }
+    return true; // Default to needing onboarding if we can't get profile
+  } catch {
+    return true; // Default to needing onboarding on error
+  }
+};
 
 export const useAuth = () => {
   const {
@@ -95,7 +111,7 @@ export const useAuth = () => {
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         toast.success("Login successful!");
-        
+
         router.push('/');
       }
     },
@@ -236,7 +252,7 @@ export const useAuth = () => {
 
   const verifyPhoneOtpMutation = useMutation({
     mutationFn: (data: PhoneOtpVerificationRequest) => authAPI.verifyPhoneOtp(data),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
 
@@ -258,6 +274,14 @@ export const useAuth = () => {
 
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success(response.message || "Phone verification successful!");
+
+        // Check if user needs onboarding and redirect accordingly
+        const needsOnboardingCheck = await needsOnboarding();
+        if (needsOnboardingCheck) {
+          router.push('/onboarding');
+        } else {
+          router.push('/');
+        }
       }
     },
     onError: (error: ApiError) => {
@@ -269,7 +293,7 @@ export const useAuth = () => {
   // Unified Google Authentication mutation
   const googleAuthMutation = useMutation({
     mutationFn: (tokens: { accessToken: string; idToken: string }) => authAPI.googleAuth(tokens),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.success && response.data) {
         const { user, session } = response.data;
         const sessionData = session as { access_token?: string; refresh_token?: string } | null;
@@ -291,6 +315,14 @@ export const useAuth = () => {
 
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         toast.success(response.message || 'Authenticated with Google');
+
+        // Check if user needs onboarding and redirect accordingly
+        const needsOnboardingCheck = await needsOnboarding();
+        if (needsOnboardingCheck) {
+          router.push('/onboarding');
+        } else {
+          router.push('/');
+        }
       }
     },
     onError: (error: ApiError) => {

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { addDays } from "date-fns";
 import HeroSection from "@/features/home/components/HeroSection";
 import { FeaturedCategories } from "@/features/home/components/FeaturedCategories";
 import BrowseCategories from "@/features/home/components/BrowseCategories";
 import { ProductsGrid } from "@/features/home/components/ProductsGrid";
+import { useBrowserLocation } from "@/hooks/useBrowserLocation";
 
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -16,9 +17,24 @@ export default function HomePage() {
 
   const categoriesRef = useRef<HTMLDivElement>(null);
 
-  // Get date range from global store (from header)
+  // Get location data
+  const { latitude, longitude, hasLocation, permission } = useBrowserLocation();
+  const userLocation = hasLocation && latitude !== null && longitude !== null ? { latitude, longitude } : null;
+
+  // Get app state
   const startDate = useAppStore((s) => s.startDate);
   const endDate = useAppStore((s) => s.endDate);
+  const selectedCity = useAppStore((s) => s.selectedCity);
+  const proximityEnabled = useAppStore((s) => s.proximityEnabled);
+  const proximityRadius = useAppStore((s) => s.proximityRadius);
+  const setProximityEnabled = useAppStore((s) => s.setProximityEnabled);
+
+  // Auto-disable proximity if location is blocked
+  useEffect(() => {
+    if (permission === 'denied' && proximityEnabled) {
+      setProximityEnabled(false);
+    }
+  }, [permission, proximityEnabled, setProximityEnabled]);
 
   // Default date range if none selected
   const dateRange = {
@@ -50,6 +66,11 @@ export default function HomePage() {
         setItemsPerPage={setItemsPerPage}
         setSelectedCategory={setSelectedCategory}
         dateRange={dateRange}
+        selectedCity={selectedCity}
+        proximityEnabled={proximityEnabled && hasLocation}
+        proximityRadius={proximityRadius}
+        userLocation={userLocation}
+        isHomePage={true}
       />
     </div>
   );

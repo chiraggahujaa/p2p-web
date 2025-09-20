@@ -50,6 +50,7 @@ export interface SearchFilters {
   q?: string;
   searchTerm?: string;
   categoryId?: string;
+  city?: string;
   locationId?: string;
   minPrice?: number;
   maxPrice?: number;

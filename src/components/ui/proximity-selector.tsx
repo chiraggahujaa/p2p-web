@@ -1,10 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { MapPin } from "lucide-react";
 import { cn } from "@/utils/ui";
+import { useBrowserLocation } from "@/hooks/useBrowserLocation";
+import { toast } from "sonner";
 
 export interface ProximitySelectorProps {
   enabled?: boolean;
@@ -23,17 +25,61 @@ export function ProximitySelector({
   className,
   compact = false
 }: ProximitySelectorProps) {
+  const { hasLocation, permission, requestLocation } = useBrowserLocation();
+
+  // Local state for immediate UI updates
+  const [localRadius, setLocalRadius] = useState(radius);
+
+  // Sync local radius with prop when it changes externally
+  useEffect(() => {
+    setLocalRadius(radius);
+  }, [radius]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Force disable if no location permission
+  const isLocationBlocked = permission === 'denied' || !hasLocation;
+  const effectiveEnabled = enabled && !isLocationBlocked;
+
   const handleEnabledChange = (checked: boolean) => {
+    if (checked && !hasLocation) {
+      // Request permission when trying to enable without location
+      requestLocation();
+      toast.info("Please allow location access to use proximity filtering");
+      return;
+    }
     onEnabledChange?.(checked);
   };
 
-  const handleRadiusChange = (values: number[]) => {
+  // Debounced radius change to avoid too many API calls
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleRadiusChange = useCallback((values: number[]) => {
     const newRadius = values[0] || 25;
-    onRadiusChange?.(newRadius);
-  };
+
+    // Update local state immediately for UI responsiveness
+    setLocalRadius(newRadius);
+
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Set new timeout to call the actual handler after 500ms
+    debounceTimeoutRef.current = setTimeout(() => {
+      onRadiusChange?.(newRadius);
+    }, 500);
+  }, [onRadiusChange]);
 
   const formatDistance = (km: number) => {
-    if (km >= 100) return "100+ km";
+    if (km >= 500) return "500+ km";
     if (km <= 5) return `${km} km`;
     return `${km} km`;
   };
@@ -43,28 +89,33 @@ export function ProximitySelector({
       <div className={cn("flex items-center gap-2", className)}>
         <Checkbox
           id="proximity-toggle"
-          checked={enabled}
+          checked={effectiveEnabled}
           onCheckedChange={handleEnabledChange}
         />
-        <div 
+        <div
           className={cn(
             "flex items-center gap-2 transition-opacity",
-            !enabled && "opacity-50 pointer-events-none"
+            (!effectiveEnabled || isLocationBlocked) && "opacity-50 pointer-events-none"
           )}
         >
           <MapPin className="size-4 text-muted-foreground" />
+          {isLocationBlocked && (
+            <span className="text-xs text-muted-foreground">
+              Location blocked
+            </span>
+          )}
           <div className="flex items-center gap-2 min-w-[100px]">
             <Slider
-              value={[radius]}
+              value={[localRadius]}
               onValueChange={handleRadiusChange}
-              disabled={!enabled}
+              disabled={!effectiveEnabled}
               min={5}
-              max={100}
+              max={500}
               step={5}
               className="flex-1"
             />
             <span className="text-sm text-muted-foreground font-medium min-w-[40px]">
-              {formatDistance(radius)}
+              {formatDistance(localRadius)}
             </span>
           </div>
         </div>
@@ -77,7 +128,7 @@ export function ProximitySelector({
       <div className="flex items-center space-x-2">
         <Checkbox
           id="proximity-enabled"
-          checked={enabled}
+          checked={effectiveEnabled}
           onCheckedChange={handleEnabledChange}
         />
         <label
@@ -86,12 +137,17 @@ export function ProximitySelector({
         >
           Filter by distance
         </label>
+        {isLocationBlocked && (
+          <span className="text-xs text-muted-foreground ml-2">
+            (Location access required)
+          </span>
+        )}
       </div>
-      
-      <div 
+
+      <div
         className={cn(
           "space-y-3 transition-opacity",
-          !enabled && "opacity-50 pointer-events-none"
+          (!effectiveEnabled || isLocationBlocked) && "opacity-50 pointer-events-none"
         )}
       >
         <div className="flex items-center justify-between">
@@ -99,25 +155,25 @@ export function ProximitySelector({
             Search radius
           </label>
           <span className="text-sm font-medium">
-            {formatDistance(radius)}
+            {formatDistance(localRadius)}
           </span>
         </div>
-        
+
         <div className="px-1">
           <Slider
-            value={[radius]}
+            value={[localRadius]}
             onValueChange={handleRadiusChange}
-            disabled={!enabled}
+            disabled={!effectiveEnabled}
             min={5}
-            max={100}
+            max={500}
             step={5}
             className="w-full"
           />
         </div>
-        
+
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>5 km</span>
-          <span>100+ km</span>
+          <span>500+ km</span>
         </div>
       </div>
     </div>

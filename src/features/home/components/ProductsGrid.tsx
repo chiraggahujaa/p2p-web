@@ -17,6 +17,11 @@ type ProductsGridProps = {
   setItemsPerPage: (count: number) => void;
   setSelectedCategory: (category: string) => void;
   dateRange: { from: Date; to: Date };
+  selectedCity: string | null;
+  proximityEnabled: boolean;
+  proximityRadius: number;
+  userLocation: { latitude: number; longitude: number } | null;
+  isHomePage: boolean;
 };
 
 export const ProductsGrid = ({
@@ -27,13 +32,23 @@ export const ProductsGrid = ({
   setItemsPerPage,
   setSelectedCategory,
   dateRange,
+  selectedCity,
+  proximityEnabled,
+  proximityRadius,
+  userLocation,
+  isHomePage,
 }: ProductsGridProps) => {
   const router = useRouter();
-  const { allCategories, itemsResponse, itemsLoading } = useHomeData(
+  const { allCategories, itemsResponse, itemsLoading } = useHomeData({
     selectedCategory,
     currentPage,
-    itemsPerPage
-  );
+    itemsPerPage,
+    selectedCity,
+    proximityEnabled,
+    proximityRadius,
+    userLocation,
+    isHomePage,
+  });
 
   const items = itemsResponse?.data?.data || [];
   const totalItems = itemsResponse?.data?.pagination?.total || 0;

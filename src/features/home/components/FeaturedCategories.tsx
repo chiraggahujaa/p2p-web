@@ -11,7 +11,16 @@ type FeaturedCategoriesProps = {
 };
 
 export const FeaturedCategories = ({ categoriesRef, onSelectCategory }: FeaturedCategoriesProps) => {
-  const { popularCategories, categoriesLoading } = useHomeData("", 1, 15);
+  const { popularCategories, categoriesLoading } = useHomeData({
+    selectedCategory: "",
+    currentPage: 1,
+    itemsPerPage: 15,
+    selectedCity: null,
+    proximityEnabled: false,
+    proximityRadius: 25,
+    userLocation: null,
+    isHomePage: true,
+  });
 
   const featuredCategories = popularCategories?.data?.slice(0, 4) || [];
 

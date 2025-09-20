@@ -223,6 +223,16 @@ export default function Header() {
   const setProximityRadius = useAppStore((s) => s.setProximityRadius);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  // Get location permission state
+  const { permission } = useBrowserLocation();
+
+  // Auto-disable proximity if location is blocked
+  useEffect(() => {
+    if (permission === 'denied' && proximityEnabled) {
+      setProximityEnabled(false);
+    }
+  }, [permission, proximityEnabled, setProximityEnabled]);
+
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -272,17 +282,15 @@ export default function Header() {
                 onChange={setDateRange}
               />
             </div>
-            {isAuthenticated && (
-              <div className="hidden lg:flex items-center gap-2">
-                <ProximitySelector
-                  enabled={proximityEnabled}
-                  radius={proximityRadius}
-                  onEnabledChange={setProximityEnabled}
-                  onRadiusChange={setProximityRadius}
-                  compact
-                />
-              </div>
-            )}
+            <div className="hidden lg:flex items-center gap-2">
+              <ProximitySelector
+                enabled={proximityEnabled}
+                radius={proximityRadius}
+                onEnabledChange={setProximityEnabled}
+                onRadiusChange={setProximityRadius}
+                compact
+              />
+            </div>
           </div>
 
           {/* Right: Icons + Auth */}

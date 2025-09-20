@@ -20,7 +20,16 @@ const BrowseCategories = ({
   selectedCategory,
   setSelectedCategory
 }: BrowseCategoriesProps) => {
-  const { allCategories, allCategoriesLoading } = useHomeData("", 1, 15);
+  const { allCategories, allCategoriesLoading } = useHomeData({
+    selectedCategory: "",
+    currentPage: 1,
+    itemsPerPage: 15,
+    selectedCity: null,
+    proximityEnabled: false,
+    proximityRadius: 25,
+    userLocation: null,
+    isHomePage: true,
+  });
   return (
      <section
         id="categories-section"
